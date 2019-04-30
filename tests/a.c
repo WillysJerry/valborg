@@ -115,7 +115,7 @@ void test_map1(const par_array A) {
 		assert(
 			abs(B.a[i] - square(A.a[i]))
 			<= EPSILON);
-		printf("%f ", B.a[i]);
+		printf("%.1f ", B.a[i]);
 	}
 	printf("\n");
 
@@ -129,7 +129,7 @@ void test_map2(const par_array A) {
 		assert(
 			abs(B.a[i] - 2 * A.a[i])
 			<= EPSILON);
-		printf("%f ", B.a[i]);
+		printf("%.1f ", B.a[i]);
 	}
 	printf("\n");
 
@@ -143,10 +143,31 @@ void test_map3(const par_array A) {
 		assert(
 			abs(B.a[i] - 3 * A.a[i])
 			<= EPSILON);
-		printf("%f ", B.a[i]);
+		printf("%.1f ", B.a[i]);
 	}
 	printf("\n");
 
+}
+
+void test_reduce(const par_array A) {
+	double red = seq_reduce(sum2, A);	
+	double acc = 0.0;
+	printf("#### Testing REDUCE ####\n");
+	for(int i = 0; i < length(A); i++) {
+		acc += A.a[i];
+	}
+	assert(red == acc);
+	printf("Summation of A: %.1f\n", red);
+}
+
+void test_scan(const par_array A) {
+	par_array scan = seq_scan(sum2, A);	
+	double acc = 0.0;
+	printf("#### Testing SCAN ####\n");
+	for(int i = 0; i < length(A); i++) {
+		acc += A.a[i];
+		printf("SCAN(A)[%d]: %.1f\n", i, scan.a[i]);
+	}
 }
 
 int main(int argc, char** argv) {
@@ -174,6 +195,8 @@ int main(int argc, char** argv) {
 	test_map1(A);
 	test_map2(A);
 	test_map3(A);
+	test_reduce(A);
+	test_scan(A);
 
 	return 0;
 }

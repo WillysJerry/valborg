@@ -97,3 +97,26 @@ par_array seq_map3(double (*f)(double x, double y, double z), const par_array a,
 
 	return res;
 }
+
+// Sequential reduce and scan are basically linear pairwise applications of the function f over the input array
+double seq_reduce(double (*f)(double x, double y), const par_array a) {
+	double res = a.a[0];
+	for(int i = 1; i < length(a); i++) {
+		res = f(res, a.a[i]);	
+	}
+
+	return res;
+}
+par_array seq_scan(double (*f)(double x, double y), const par_array a) {
+	double* arr = (double*)calloc(length(a), sizeof(double));
+
+	// a[0], f(a[0], a[1]), f(a[0], f(a[1], a[2])), ...
+	arr[0] = a.a[0];
+	for(int i = 1; i < length(a); i++) {
+		arr[i] = f(arr[i-1], a.a[i]);	
+	}
+
+	par_array res = mk_array(arr, a.m, a.n);
+	free(arr);
+	return res;
+}
