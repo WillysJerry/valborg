@@ -8,6 +8,7 @@
 
 #define EPSILON 0.0001
 
+// Bunch of functions that are sent to the data-parallel functions during tests
 double square(double x) {
 	return x*x;
 }
@@ -17,14 +18,18 @@ double sum2(double x, double y) {
 double sum3(double x, double y, double z) {
 	return x+y+z;
 }
+int lt3(double x) {
+	return x<3;
+}
 
 // Mapping function used for get and send communication. Remember to update tests if this function is changed or things will be scuffed.
 int src(int i) {
 	return (i + 1) % 6;
 }
 
+
 void test_get(const par_array A) {
-	par_array B = seq_get(A, src);
+	par_array B = seq_get(A, src, NULL);
 
 	assert(B.m == A.m && B.n == A.n);
 	assert(length(A) == 6 && length(B) == 6);
@@ -34,6 +39,15 @@ void test_get(const par_array A) {
 		// B should be A shifted one step to the right
 		assert(abs(B.a[i] - A.a[(i + 1) % 6]) <= EPSILON);
 		printf("A[%d]->B[%d]: %.1f\n", (i+1)%length(A), i, B.a[i]); 
+	}
+
+	free(B.a);
+
+	// Make sure masking works
+	B = seq_get(A, src, lt3);
+	for(int i = 0; i < length(B); i++) {
+		assert(lt3(B.a[i]));
+		printf("A[%d]->B[%d] where A[%d] < 3: %.1f\n", (i+1)%length(A), i, (i+1)%length(A), B.a[i]);
 	}
 
 	free(B.a);

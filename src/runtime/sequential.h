@@ -8,7 +8,7 @@
 
 #include "runtime.h"
 
-par_array seq_get(const par_array a, int (*f)(int i));
+par_array seq_get(const par_array a, int (*f)(int i), int (*p)(double x));
 
 void seq_send(par_array a, int (*f)(int i), const par_array b);
 

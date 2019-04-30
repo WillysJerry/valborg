@@ -4,20 +4,25 @@
 #include <stdlib.h>
 #include <string.h>
 
-par_array seq_get(const par_array a, int (*f)(int i)) {
+// 'p' is a pointer to a predicate used to mask out certain elements. It works kind of weird right now as it (on purpose) "squishes" the resulting array to ONLY contain the non-masked elements of 'a', which makes the mapping function act kind of funny (maybe). The predicate can also be NULL which makes this function perform a normal get communication.
+par_array seq_get(const par_array a, int (*f)(int i), int (*p)(double x)) {
 
 	int len = length(a);
+	int n = 0;		// Size counter of the resulting array.
 
 	// Allocate temp array
 	double* arr = (double*)calloc(len, sizeof(double));
 	
 	for(int i = 0; i < len; i++) {
-		memcpy(	arr + i,  		// dest
-			a.a + f(i), 		// src
-			sizeof(double));	// size
+		// Make sure a[f(i)] satisfies predicate
+		if(p == NULL || p(a.a[f(i)]))
+			memcpy(	arr + (n++),  		// dest
+				a.a + f(i), 		// src
+				sizeof(double));	// size
 	}
 
-	par_array b = mk_array(arr, a.m, a.n); 
+	par_array b = mk_array(arr, a.m, a.m + n - 1); 
+	//par_array b = mk_array(arr, a.m, a.n); 
 	free(arr);
 
 	return b;
@@ -120,3 +125,4 @@ par_array seq_scan(double (*f)(double x, double y), const par_array a) {
 	free(arr);
 	return res;
 }
+
