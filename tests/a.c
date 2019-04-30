@@ -8,9 +8,14 @@
 
 #define EPSILON 0.0001
 
-int foo(int i) {
-	printf("FOO CALLED: %d\n", i);
-	return 2;
+double square(double x) {
+	return x*x;
+}
+double sum2(double x, double y) {
+	return x+y;
+}
+double sum3(double x, double y, double z) {
+	return x+y+z;
 }
 
 // Mapping function used for get and send communication. Remember to update tests if this function is changed or things will be scuffed.
@@ -102,6 +107,48 @@ void test_select(const par_array A, int m, int n) {
 	free(B.a);
 }
 
+void test_map1(const par_array A) {
+	par_array B = seq_map1(square, A);
+	printf("#### Test MAP1 ####\n");
+	printf("map square A\n");
+	for(int i = 0; i < length(A); i++) {
+		assert(
+			abs(B.a[i] - square(A.a[i]))
+			<= EPSILON);
+		printf("%f ", B.a[i]);
+	}
+	printf("\n");
+
+}
+
+void test_map2(const par_array A) {
+	par_array B = seq_map2(sum2, A, A);
+	printf("#### Test MAP2 ####\n");
+	printf("map sum2 A A\n");
+	for(int i = 0; i < length(A); i++) {
+		assert(
+			abs(B.a[i] - 2 * A.a[i])
+			<= EPSILON);
+		printf("%f ", B.a[i]);
+	}
+	printf("\n");
+
+}
+
+void test_map3(const par_array A) {
+	par_array B = seq_map3(sum3, A, A, A);
+	printf("#### Test MAP3 ####\n");
+	printf("map sum3 A A A\n");
+	for(int i = 0; i < length(A); i++) {
+		assert(
+			abs(B.a[i] - 3 * A.a[i])
+			<= EPSILON);
+		printf("%f ", B.a[i]);
+	}
+	printf("\n");
+
+}
+
 int main(int argc, char** argv) {
 	int m = 0xbabeface;
 	int n = 0xbeefcab;
@@ -124,6 +171,9 @@ int main(int argc, char** argv) {
 	test_send(A);
 	test_concat(A);
 	test_select(A, 1, 3);
+	test_map1(A);
+	test_map2(A);
+	test_map3(A);
 
 	return 0;
 }

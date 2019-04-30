@@ -52,3 +52,48 @@ par_array seq_select(const par_array a, int m, int n) {
 
 	return b;
 }
+
+par_array seq_map1(double (*f)(double x), const par_array a) {
+	int len = length(a);
+	double* arr = (double*)calloc(len, sizeof(double));
+
+	for(int i = 0; i < len; i++) {
+		arr[i] = f(a.a[i]);
+	}
+
+	par_array res = mk_array(arr, a.m, a.n);
+	free(arr);
+
+	return res;
+}
+
+// How to handle these (map2, map3)? Should arrays of different sizes be allowed? Also how will it work with index bounds?
+par_array seq_map2(double (*f)(double x, double y), const par_array a, const par_array b) {
+	// Make the resulting arrays length depend on the length of the first array for now. 
+	int len = length(a);
+	double* arr = (double*)calloc(len, sizeof(double));
+
+	for(int i = 0; i < len; i++) {
+		arr[i] = f(a.a[i], b.a[i]);
+	}
+
+	par_array res = mk_array(arr, a.m, a.n);
+	free(arr);
+
+	return res;
+}
+
+par_array seq_map3(double (*f)(double x, double y, double z), const par_array a, const par_array b, const par_array c) {
+	// Make the resulting arrays length depend on the length of the first array for now. 
+	int len = length(a);
+	double* arr = (double*)calloc(len, sizeof(double));
+
+	for(int i = 0; i < len; i++) {
+		arr[i] = f(a.a[i], b.a[i], c.a[i]);
+	}
+
+	par_array res = mk_array(arr, a.m, a.n);
+	free(arr);
+
+	return res;
+}
