@@ -7,7 +7,9 @@
 par_array mk_array(const double* a, int m, int n) {
 	int len = n - m + 1;
 	double* v = (double*)calloc(len, sizeof(double));
-	memcpy(v, a, len * sizeof(double));
+
+	if(a != NULL)
+		memcpy(v, a, len * sizeof(double));
 
 	par_array arr = { m, n, v};
 	return arr;
