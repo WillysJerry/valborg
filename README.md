@@ -1,2 +1,0 @@
-# Then Swenska Sprätthöken
-

@@ -7,17 +7,17 @@
 // 'p' is a pointer to a predicate used to mask out certain elements. It works kind of weird right now as it (on purpose) "squishes" the resulting array to ONLY contain the non-masked elements of 'a', which makes the mapping function act kind of funny (maybe). The predicate can also be NULL which makes this function perform a normal get communication.
 // I see two possible ways to tackle this problem, either we "squish" the resulting array from masked values, resulting in a smaller array:
 // ------------------
-//  3  4 -1  5 -6  9     "{ x in [3, 4, -1, 5, -6, 9] | where x > 0 }"
-//  |  |   _/ ____/
-//  v  v  v  v
-//  3  4  5  9
+// A:  3  4 -1  5 -6  9     "forall i where i>0 do B[i] = A[i]" ???
+//     |  |   _/ ____/
+//     v  v  v  v
+// B:  3  4  5  9
 // ------------------
 // Or we 0 the masked elements instead, creating a sparse array of the same size as the input array (this solution probably makes more sense in regards to the "source" function f):
 // ------------------
-//  3  4 -1  5 -6  9     "{ x in [3, 4, -1, 5, -6, 9] | where x > 0 }"
-//  |  |  |  |  |  |
-//  v  v  v  v  v  v
-//  3  4  0  5  0  9
+// A:  3  4 -1  5 -6  9     "forall i where i>0 do B[i] = A[i]"
+//     |  |  |  |  |  |
+//     v  v  v  v  v  v
+// B:  3  4  0  5  0  9
 // ------------------
 par_array seq_get(const par_array a, int (*f)(int i), int (*p)(int i)) {
 
@@ -28,7 +28,7 @@ par_array seq_get(const par_array a, int (*f)(int i), int (*p)(int i)) {
 	double* arr = (double*)calloc(len, sizeof(double));
 	
 	for(int i = 0; i < len; i++) {
-		// Make sure a[f(i)] satisfies predicate
+		// Make sure i satisfies predicate
 		if(p == NULL || p(i))
 			memcpy(	arr + i,  		// dest
 				a.a + f(i), 		// src
