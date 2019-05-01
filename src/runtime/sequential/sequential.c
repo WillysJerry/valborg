@@ -2,13 +2,27 @@
 #include "../runtime.h"
 
 #include <stdlib.h>
-#include <string.h>
+#include <string.h> // For memcpy
 
 // 'p' is a pointer to a predicate used to mask out certain elements. It works kind of weird right now as it (on purpose) "squishes" the resulting array to ONLY contain the non-masked elements of 'a', which makes the mapping function act kind of funny (maybe). The predicate can also be NULL which makes this function perform a normal get communication.
+// I see two possible ways to tackle this problem, either we "squish" the resulting array from masked values, resulting in a smaller array:
+// ------------------
+//  3  4 -1  5 -6  9     "{ x in [3, 4, -1, 5, -6, 9] | where x > 0 }"
+//  |  |   _/ ____/
+//  v  v  v  v
+//  3  4  5  9
+// ------------------
+// Or we 0 the masked elements instead, creating a sparse array of the same size as the input array (this solution probably makes more sense in regards to the "source" function f):
+// ------------------
+//  3  4 -1  5 -6  9     "{ x in [3, 4, -1, 5, -6, 9] | where x > 0 }"
+//  |  |  |  |  |  |
+//  v  v  v  v  v  v
+//  3  4  0  5  0  9
+// ------------------
 par_array seq_get(const par_array a, int (*f)(int i), int (*p)(double x)) {
 
 	int len = length(a);
-	int n = 0;		// Size counter of the resulting array.
+	//int n = 0;		// Size counter of the resulting array.
 
 	// Allocate temp array
 	double* arr = (double*)calloc(len, sizeof(double));
@@ -16,13 +30,17 @@ par_array seq_get(const par_array a, int (*f)(int i), int (*p)(double x)) {
 	for(int i = 0; i < len; i++) {
 		// Make sure a[f(i)] satisfies predicate
 		if(p == NULL || p(a.a[f(i)]))
-			memcpy(	arr + (n++),  		// dest
+			memcpy(	arr + i,  		// dest
 				a.a + f(i), 		// src
 				sizeof(double));	// size
+
+			/*memcpy(	arr + (n++),  		// dest
+				a.a + f(i), 		// src
+				sizeof(double));	// size*/
 	}
 
-	par_array b = mk_array(arr, a.m, a.m + n - 1); 
-	//par_array b = mk_array(arr, a.m, a.n); 
+	//par_array b = mk_array(arr, a.m, a.m + n - 1);
+	par_array b = mk_array(arr, a.m, a.n); 
 	free(arr);
 
 	return b;
