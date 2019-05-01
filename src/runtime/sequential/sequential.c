@@ -19,7 +19,7 @@
 //  v  v  v  v  v  v
 //  3  4  0  5  0  9
 // ------------------
-par_array seq_get(const par_array a, int (*f)(int i), int (*p)(double x)) {
+par_array seq_get(const par_array a, int (*f)(int i), int (*p)(int i)) {
 
 	int len = length(a);
 	//int n = 0;		// Size counter of the resulting array.
@@ -29,7 +29,7 @@ par_array seq_get(const par_array a, int (*f)(int i), int (*p)(double x)) {
 	
 	for(int i = 0; i < len; i++) {
 		// Make sure a[f(i)] satisfies predicate
-		if(p == NULL || p(a.a[f(i)]))
+		if(p == NULL || p(i))
 			memcpy(	arr + i,  		// dest
 				a.a + f(i), 		// src
 				sizeof(double));	// size
@@ -76,12 +76,13 @@ par_array seq_select(const par_array a, int m, int n) {
 	return b;
 }
 
-par_array seq_map1(double (*f)(double x), const par_array a) {
+par_array seq_map1(double (*f)(double x), const par_array a, int (*p)(int i)) {
 	int len = length(a);
 	double* arr = (double*)calloc(len, sizeof(double));
 
 	for(int i = 0; i < len; i++) {
-		arr[i] = f(a.a[i]);
+		if(p == NULL || p(i))
+			arr[i] = f(a.a[i]);
 	}
 
 	par_array res = mk_array(arr, a.m, a.n);
@@ -91,13 +92,14 @@ par_array seq_map1(double (*f)(double x), const par_array a) {
 }
 
 // How to handle these (map2, map3)? Should arrays of different sizes be allowed? Also how will it work with index bounds?
-par_array seq_map2(double (*f)(double x, double y), const par_array a, const par_array b) {
+par_array seq_map2(double (*f)(double x, double y), const par_array a, const par_array b, int (*p)(int i)) {
 	// Make the resulting arrays length depend on the length of the first array for now. 
 	int len = length(a);
 	double* arr = (double*)calloc(len, sizeof(double));
 
 	for(int i = 0; i < len; i++) {
-		arr[i] = f(a.a[i], b.a[i]);
+		if(p == NULL || p(i))
+			arr[i] = f(a.a[i], b.a[i]);
 	}
 
 	par_array res = mk_array(arr, a.m, a.n);
@@ -106,12 +108,13 @@ par_array seq_map2(double (*f)(double x, double y), const par_array a, const par
 	return res;
 }
 
-par_array seq_map3(double (*f)(double x, double y, double z), const par_array a, const par_array b, const par_array c) {
+par_array seq_map3(double (*f)(double x, double y, double z), const par_array a, const par_array b, const par_array c, int (*p)(int i)) {
 	// Make the resulting arrays length depend on the length of the first array for now. 
 	int len = length(a);
 	double* arr = (double*)calloc(len, sizeof(double));
 
 	for(int i = 0; i < len; i++) {
+		if(p == NULL || p(i))
 		arr[i] = f(a.a[i], b.a[i], c.a[i]);
 	}
 

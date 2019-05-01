@@ -18,8 +18,8 @@ double sum2(double x, double y) {
 double sum3(double x, double y, double z) {
 	return x+y+z;
 }
-int lt3(double x) {
-	return x<3;
+int lt3(int i) {
+	return i<3;
 }
 
 // Mapping function used for get and send communication. Remember to update tests if this function is changed or things will be scuffed.
@@ -46,8 +46,8 @@ void test_get(const par_array A) {
 	// Make sure masking works
 	B = seq_get(A, src, lt3);
 	for(int i = 0; i < length(B); i++) {
-		assert(lt3(B.a[i]));
-		printf("A[%d]->B[%d] where A[%d] < 3: %.1f\n", (i+1)%length(A), i, (i+1)%length(A), B.a[i]);
+		assert(lt3(i) ? (abs(B.a[i] - A.a[(i+1)%6]) <= EPSILON) : (B.a[i] == 0.0) );
+		printf("A[%d]->B[%d] where %d < 3: %.1f\n", (i+1)%length(A), i, i, B.a[i]);
 	}
 
 	free(B.a);
@@ -122,7 +122,7 @@ void test_select(const par_array A, int m, int n) {
 }
 
 void test_map1(const par_array A) {
-	par_array B = seq_map1(square, A);
+	par_array B = seq_map1(square, A, NULL);
 	printf("#### Test MAP1 ####\n");
 	printf("map square A\n");
 	for(int i = 0; i < length(A); i++) {
@@ -135,10 +135,13 @@ void test_map1(const par_array A) {
 
 }
 
+int filter_even(int i) {
+	return i % 2 == 0;
+}
 void test_map2(const par_array A) {
-	par_array B = seq_map2(sum2, A, A);
+	par_array B = seq_map2(sum2, A, A, NULL);
 	printf("#### Test MAP2 ####\n");
-	printf("map sum2 A A\n");
+	printf("B = map sum2 A A\n");
 	for(int i = 0; i < length(A); i++) {
 		assert(
 			abs(B.a[i] - 2 * A.a[i])
@@ -146,11 +149,20 @@ void test_map2(const par_array A) {
 		printf("%.1f ", B.a[i]);
 	}
 	printf("\n");
+	par_array C = seq_map2(sum2, A, B, filter_even);
+	printf("C = map sum2 A B | where i mod 2 == 0\n");
+	for(int i = 0; i < length(C); i++) {
+		printf("%.1f ", C.a[i]);
+	}
+	printf("\n");
+
+	free(B.a);
+	free(C.a);
 
 }
 
 void test_map3(const par_array A) {
-	par_array B = seq_map3(sum3, A, A, A);
+	par_array B = seq_map3(sum3, A, A, A, NULL);
 	printf("#### Test MAP3 ####\n");
 	printf("map sum3 A A A\n");
 	for(int i = 0; i < length(A); i++) {
