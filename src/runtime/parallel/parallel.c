@@ -5,6 +5,26 @@
 #include <string.h>
 
 #include <stdio.h>
+
+void merge_result(dist_ret** ret, par_array* result) {
+	int cnt = 0;
+
+	// Get the total length of the output array
+	for(int i = 0; i < NUM_THREADS; i++) {
+		if(ret[i] != NULL)
+			result->n += ret[i]->n;
+	}
+	result->a = (double*)calloc(length(*result), sizeof(double));
+	for(int i = 0; i < NUM_THREADS; i++) {
+		if(ret[i] != NULL) {
+			for(int j = 0; j < ret[i]->n; j++)
+				result->a[cnt++] = ret[i]->v[j];
+			free(ret[i]->v);
+			free(ret[i]);
+		}
+	}
+}
+
 void map3_thrd(distribution dist, int id, dist_ret* retval, void* f, void* p) {
 	int size = dist.b_size[id];
 	double* arr = (double*)calloc(dist.b_size[id], sizeof(double));
@@ -36,9 +56,6 @@ par_array par_map3(double (*f)(double x, double y, double z), const par_array a,
 	par_array arrs[] = { a, b, c };
 	distribution dist = distribute(arrs, 3);
 
-	print_distribution(dist);
-
-
 	// Start parallel execution
 	dist_ret** ret = execute_in_parallel(map3_thrd, dist, (void*)f, (void*)p);
 
@@ -46,22 +63,8 @@ par_array par_map3(double (*f)(double x, double y, double z), const par_array a,
 	result.m = dist.m;	
 	result.n = dist.m - 1;	// Initialize n to be one less then m, as n,m are both inclusive (m=0,n=0 equals an array consisting of one element
 
-	int cnt = 0;
 	if(ret != NULL) {
-		// Get the total length of the output array
-		for(int i = 0; i < NUM_THREADS; i++) {
-			if(ret[i] != NULL)
-				result.n += ret[i]->n;
-		}
-		result.a = (double*)calloc(length(result), sizeof(double));
-		for(int i = 0; i < NUM_THREADS; i++) {
-			if(ret[i] != NULL) {
-				for(int j = 0; j < ret[i]->n; j++)
-					result.a[cnt++] = ret[i]->v[j];
-				free(ret[i]->v);
-				free(ret[i]);
-			}
-		}
+		merge_result(ret, &result);
 		free(ret);
 	}
 
