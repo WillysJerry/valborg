@@ -20,15 +20,17 @@ typedef struct _worker_args {
 } worker_args;
 
 distribution distribute(const par_array* arr, int n) {
-	int i, a_m, a_n, len, block_size, longest;
+	int 	i,
+		a_m, 		// The "m" of the distribution, the lowest intersecting index of all input arrays
+		a_n, 		// The "n" of the distribution, the largest intersecting index of all input arrays
+		len, 		// The total length of the segment (intersecting indices)
+		block_size;	// Size of the individual blocks
 	distribution dist;
 
+	// Figure out where the arrays intersect
 	a_m = 0;
-	longest = length(arr[0]);
-	a_n = longest - 1;
+	a_n = length(arr[0]) - 1;
 	for(i = 0; i < n; i++) {
-		if(longest < length(arr[i]))
-			longest = length(arr[i]);
 		if(arr[i].m > a_m)
 			a_m = arr[i].m;	
 		if(arr[i].n < a_n)
@@ -43,7 +45,6 @@ distribution distribute(const par_array* arr, int n) {
 		return dist;
 	}
 
-	dist.n = longest;
 	dist.n_arrs = n;
 	
 	len = a_n - a_m + 1;			// Total length of the array segment
@@ -51,10 +52,14 @@ distribution distribute(const par_array* arr, int n) {
 
 	// TODO: Perhaps optimize this somewhat. First processor might be assigned (marginally) more load then the others depending on how many workers are available.
 	dist.b_size[0] = block_size + (len % NUM_THREADS);	// First block also needs to account for uneven length
+	dist.blocks[0] = 0;					// First block begins at 0
 
 	// Set block sizes for the remaining threads
+	int acc = dist.b_size[0];	// Accumulator to figure out the starting indices of the rest of the blocks
 	for(i = 1; i < NUM_THREADS; i++) {
+		dist.blocks[i] = acc;
 		dist.b_size[i] = block_size;
+		acc += block_size;
 	}
 
 	// Store references to the arrays

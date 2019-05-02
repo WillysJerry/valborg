@@ -10,9 +10,9 @@ void map3_thrd(distribution dist, int id, dist_ret* retval, void* f, void* p) {
 	double* arr = (double*)calloc(dist.b_size[id], sizeof(double));
 
 	// Just assume that these arrays were passed...
-	double* A = dist.arrs[0];
-	double* B = dist.arrs[1];
-	double* C = dist.arrs[2];
+	double* A = dist.arrs[0] + dist.blocks[id];
+	double* B = dist.arrs[1] + dist.blocks[id];
+	double* C = dist.arrs[2] + dist.blocks[id];
 
 	// Cast void pointers to functions, this is not very readable
 	double (*func)(double x, double y, double z) =
