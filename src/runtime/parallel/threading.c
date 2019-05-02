@@ -108,7 +108,6 @@ void* worker(void* args) {
 
 dist_ret** execute_in_parallel(void (*work)(distribution dist, int id, dist_ret* retval, void* f, void* p), distribution dist, void* f, void* p) {
 	int s = 0;
-	printf("#### CREATING THREADS ####\n");
 	worker_args* args = (worker_args*)calloc(NUM_THREADS, sizeof(worker_args));
 	for(int i = 0; i < NUM_THREADS; i++) {
 		args[i].id = i;
@@ -118,25 +117,18 @@ dist_ret** execute_in_parallel(void (*work)(distribution dist, int id, dist_ret*
 		args[i].p = p;
 
 		s = pthread_create(&thrds[i], NULL, worker, (void*)(args + i));
-		if(s == 0) {
-			printf("Thread %d started successfully\n", i);
+		if(s != 0) {
+			// TODO: Handle this
+			printf("Thread %d failed to start.\n", i);
 		}
 	}
 
-	printf("#### BARRIER ####\n");
 	dist_ret** ret = (dist_ret**)calloc(NUM_THREADS, sizeof(dist_ret*));
 	
 	for(int i = 0; i < NUM_THREADS; i++) {
 		ret[i] = NULL;
 		pthread_join(thrds[i], (void**)(ret + i));
-
-		// Something was returned?
-		if(ret[i] != NULL) {
-			printf("Thread %d returned something %f\n", i, ret[i]->v[0]);
-		}
 	}
-	printf("#### PARALLEL EXECUTION DONE ####\n");
-
 	free(args);
 
 	return ret;

@@ -24,7 +24,6 @@ void map3_thrd(distribution dist, int id, dist_ret* retval, void* f, void* p) {
 	for(int i = 0; i < size; i++) {
 		if(pred == NULL || pred(i)) {
 			arr[i] = func(A[i], B[i], C[i]);
-			printf("[%d][%d] %f*%f*%f=%f ", id, i, A[i], B[i], C[i], arr[i]);
 		}
 	}	
 
@@ -66,10 +65,5 @@ par_array par_map3(double (*f)(double x, double y, double z), const par_array a,
 		free(ret);
 	}
 
-	printf("##### MAP3 RESULT #####\n");
-	for(int i = 0; i < length(result); i++) {
-		printf("%f ", result.a[i]);
-	}
-	printf("\n");
 	return result;
 }
