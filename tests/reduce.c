@@ -3,13 +3,18 @@
 #include <math.h>
 #include <assert.h>
 #include <time.h>
-#include <sys/time.h>
 
 #include "../src/runtime/sequential.h"
 #include "../src/runtime/parallel.h"
 #include "../src/runtime/runtime.h"
+#include "benchmark.h"
 
-#define LRG_NUM 800000
+#define EPSILON 0.0001
+#define T1 100
+#define T2 3444
+#define T3 63595 
+#define T4 800000
+#define N_TESTS 100
 #define MAX 1000
 
 double sum2(double x, double y) {
@@ -20,42 +25,119 @@ double mul2(double x, double y) {
 	return x*y;
 }
 
-double get_time_usec() {
-	static struct timeval tv;
-	gettimeofday(&tv, NULL);
-	return tv.tv_sec * 1000000.0 + tv.tv_usec;
-}
 
 int main(int argc, char** argv) {
 	double r, r2; 	// Resulting scalar
 	double t0, t1;
+	double seq_t, par_t;
 	
-	double arr1[] = { 	1.0, 	2.0, 	3.0, 	4.0,	5.0,	6.0,	7.0,	8.0 };
-	double arr2[LRG_NUM];
+	double arr1[T1];
+	double arr2[T2];
+	double arr3[T3];
+	double arr4[T4];
 
-	const par_array A = mk_array(arr1, 0, 7);
+	srand(time(0));
 
-	srand(0xbabeface);
-	for(int i = 0; i < LRG_NUM; i++) {
+	// "Never repeat yourself"
+	for(int i = 0; i < T1; i++) {
+		arr1[i] = (double)rand()/(double)(RAND_MAX / MAX);
+	}
+	for(int i = 0; i < T2; i++) {
 		arr2[i] = (double)rand()/(double)(RAND_MAX / MAX);
 	}
-	const par_array B = mk_array(arr2, 0, LRG_NUM-1);
+	for(int i = 0; i < T3; i++) {
+		arr3[i] = (double)rand()/(double)(RAND_MAX / MAX);
+	}
+	for(int i = 0; i < T4; i++) {
+		arr4[i] = (double)rand()/(double)(RAND_MAX / MAX);
+	}
+	const par_array A = mk_array(arr1, 0, T1-1);
+	const par_array B = mk_array(arr2, 0, T2-1);
+	const par_array C = mk_array(arr3, 0, T3-1);
+	const par_array D = mk_array(arr4, 0, T4-1);
 
 	printf("#### TEST 1 ####\n");
-	r = par_reduce(mul2, A);
-	r2 = seq_reduce(mul2, A);
-	printf("%f %f\n", r, r2);
+	seq_t = 0.0;
+	par_t = 0.0;
+	for(int i = 0; i < N_TESTS; i++) {
+		t0 = get_time_usec();
+		r = par_reduce(sum2, A);
+		t1 = get_time_usec();
+		par_t += get_timediff(t0, t1);
+
+		t0 = get_time_usec();
+		r2 = seq_reduce(sum2, A);
+		t1 = get_time_usec();
+		seq_t += get_timediff(t0, t1);
+		assert(fabs(r - r2) <= EPSILON);
+	}
+	seq_t /= N_TESTS;
+	par_t /= N_TESTS;
+
+	log_benchmark(seq_t, par_t, length(A), "+-reduce");
+	//printf("%f %f\ndiff:%f\n", r, r2, fabs(r-r2));
 
 	printf("#### TEST 2 ####\n");
-	t0 = get_time_usec();
-	r = par_reduce(sum2, B);
-	t1 = get_time_usec();
-	printf("Parallel execution time: %.1lfus\n", t1-t0);
+	seq_t = 0.0;
+	par_t = 0.0;
+	for(int i = 0; i < N_TESTS; i++) {
+		t0 = get_time_usec();
+		r = par_reduce(sum2, B);
+		t1 = get_time_usec();
+		par_t += get_timediff(t0, t1);
 
-	t0 = get_time_usec();
-	r2 = seq_reduce(sum2, B);
-	t1 = get_time_usec();
-	printf("Sequential execution time: %.1lfus\n", t1-t0);
-	printf("%f %f\n", r, r2);
+		t0 = get_time_usec();
+		r2 = seq_reduce(sum2, B);
+		t1 = get_time_usec();
+		seq_t += get_timediff(t0, t1);
+		assert(fabs(r - r2) <= EPSILON);
+	}
+	seq_t /= N_TESTS;
+	par_t /= N_TESTS;
+
+	log_benchmark(seq_t, par_t, T2, "+-reduce");
+	//printf("%f %f\ndiff:%f\n", r, r2, fabs(r-r2));
+
+	printf("#### TEST 3 ####\n");
+	seq_t = 0.0;
+	par_t = 0.0;
+	for(int i = 0; i < N_TESTS; i++) {
+		t0 = get_time_usec();
+		r = par_reduce(sum2, C);
+		t1 = get_time_usec();
+		par_t += get_timediff(t0, t1);
+
+		t0 = get_time_usec();
+		r2 = seq_reduce(sum2, C);
+		t1 = get_time_usec();
+		seq_t += get_timediff(t0, t1);
+		assert(fabs(r - r2) <= EPSILON);
+	}
+	seq_t /= N_TESTS;
+	par_t /= N_TESTS;
+
+	log_benchmark(seq_t, par_t, T3, "+-reduce");
+	//printf("%f %f\ndiff:%f\n", r, r2, fabs(r-r2));
+
+	printf("#### TEST 4 ####\n");
+	seq_t = 0.0;
+	par_t = 0.0;
+	for(int i = 0; i < N_TESTS; i++) {
+		t0 = get_time_usec();
+		r = par_reduce(sum2, D);
+		t1 = get_time_usec();
+		par_t += get_timediff(t0, t1);
+
+		t0 = get_time_usec();
+		r2 = seq_reduce(sum2, D);
+		t1 = get_time_usec();
+		seq_t += get_timediff(t0, t1);
+		assert(fabs(r - r2) <= EPSILON);
+	}
+	seq_t /= N_TESTS;
+	par_t /= N_TESTS;
+
+	log_benchmark(seq_t, par_t, T4, "+-reduce");
+	//printf("%f %f\ndiff:%f\n", r, r2, fabs(r-r2));
 	return 0;
 }
