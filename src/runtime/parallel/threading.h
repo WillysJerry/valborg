@@ -4,6 +4,8 @@
 #include "../parallel.h"
 #include "../runtime.h"
 
+#define NUM_THREADS 4
+
 // As a starting point, data-parallel operations will only operate on the set of indices that intersect the input arrays. Perhaps we'd want to change this later, but how would we handle indices outside the range of one of the arrays?
 typedef struct _distribution {
 	int m;
@@ -23,5 +25,7 @@ void free_distribution(distribution dist);
 void print_distribution(distribution dist);
 
 dist_ret** execute_in_parallel(void (*work)(distribution dist, int id, dist_ret* retval, void* f, void* p), distribution dist, void* f, void* p);
+
+void merge_result(dist_ret** ret, par_array* result);
 
 #endif // THREADING_H

@@ -24,7 +24,7 @@ int main(int argc, char** argv) {
 	double arr2[] = { 	3.0, 	4.0, 	5.0, 	6.0, 	7.0, 	8.0 };
 	double arr3[] = { 	-1.0,	-2.0, 	-3.0, 	-4.0, 	-5.0, 	-6.0 };
 
-	const par_array A = mk_array(arr1, 0, 5);
+	const par_array A = mk_array(arr1, 3, 5);
 	const par_array B = mk_array(arr2, 0, 5);
 	const par_array C = mk_array(arr3, 0, 5);
 

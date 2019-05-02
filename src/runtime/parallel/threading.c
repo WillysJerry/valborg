@@ -28,9 +28,9 @@ distribution distribute(const par_array* arr, int n) {
 	distribution dist;
 
 	// Figure out where the arrays intersect
-	a_m = 0;
-	a_n = length(arr[0]) - 1;
-	for(i = 0; i < n; i++) {
+	a_m = arr[0].m;
+	a_n = arr[0].n;
+	for(i = 1; i < n; i++) {
 		if(arr[i].m > a_m)
 			a_m = arr[i].m;	
 		if(arr[i].n < a_n)
@@ -125,6 +125,7 @@ dist_ret** execute_in_parallel(void (*work)(distribution dist, int id, dist_ret*
 
 	dist_ret** ret = (dist_ret**)calloc(NUM_THREADS, sizeof(dist_ret*));
 	
+	// Barrier. Wait for all active workers to finish
 	for(int i = 0; i < NUM_THREADS; i++) {
 		ret[i] = NULL;
 		pthread_join(thrds[i], (void**)(ret + i));
@@ -132,4 +133,28 @@ dist_ret** execute_in_parallel(void (*work)(distribution dist, int id, dist_ret*
 	free(args);
 
 	return ret;
+}
+
+void merge_result(dist_ret** ret, par_array* result) {
+	int cnt = 0;
+
+	result->n = result->m - 1;
+	// Get the total length of the output array
+	for(int i = 0; i < NUM_THREADS; i++) {
+		// Was something returned by thread i?
+		if(ret[i] != NULL)
+			result->n += ret[i]->n;	// If so, add the length of the returned array to the resulting arrays length
+	}
+	result->a = (double*)calloc(length(*result), sizeof(double));
+
+	// Copy the values from the separate blocks to the resulting array
+	for(int i = 0; i < NUM_THREADS; i++) {
+		if(ret[i] != NULL) {
+			for(int j = 0; j < ret[i]->n; j++) {
+				result->a[cnt++] = ret[i]->v[j];
+			}
+			free(ret[i]->v);
+			free(ret[i]);
+		}
+	}
 }

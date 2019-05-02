@@ -7,8 +7,8 @@
 #define PARALLEL_H
 
 #include "runtime.h"
+#include "parallel/threading.h"
 
-#define NUM_THREADS 4
 
 par_array par_get(const par_array a, int (*f)(int i), int (*p)(int i));
 
@@ -30,7 +30,5 @@ par_array par_scan(double (*f)(double x, double y), const par_array a);
 
 // Returns a new array where the elements fulfill predicate p, should probably be changed somehow to be more useful.
 par_array par_mask(int (*p)(double x), par_array a);
-
-
 
 #endif // PARALLEL_H

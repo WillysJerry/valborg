@@ -1,9 +1,14 @@
 CC=gcc
 CFLAGS=-Wall -O3 -g
-LIB=-lpthread
+LIB=-lpthread -lm
+
+GLOB_OBJ=obj/runtime.o
+SEQ_OBJ=obj/seq_sequential.o
+PAR_OBJ=obj/par_threading.o obj/par_parallel.o obj/par_map.o obj/par_get.o obj/par_reduce.o 
+#obj/par_map.o
 
 # Probably a good idea to make the "runtime" into a library or something instead of directly linking the object files (mostly because it's annoying and looks ugly, and also because it makes the most sense?)
-tests: test_a test_map
+tests: test_a test_map test_reduce
 
 # Prefix all sequential runtime object files with seq_
 obj/seq_%.o: src/runtime/sequential/%.c
@@ -20,12 +25,17 @@ obj/runtime.o: src/runtime/runtime.c
 	mkdir -p obj
 	$(CC) $(CFLAGS) -c $< -o $@ 
 
-test_a: obj/runtime.o obj/seq_sequential.o tests/a.c
+test_a: $(GLOB_OBJ) $(SEQ_OBJ) tests/a.c
 	mkdir -p bin
-	$(CC) $(CFLAGS) $^ -o bin/a
-test_map: obj/runtime.o obj/seq_sequential.o obj/par_threading.o obj/par_parallel.o tests/map.c
+	$(CC) $(CFLAGS) $^ -o bin/a $(LIB)
+
+test_map: $(GLOB_OBJ) $(SEQ_OBJ) $(PAR_OBJ) tests/map.c 
 	mkdir -p bin
-	$(CC) $(CFLAGS) $(LIB) $^ -o bin/map
+	$(CC) $(CFLAGS) $^ -o bin/map $(LIB)
+
+test_reduce: $(GLOB_OBJ) $(SEQ_OBJ) $(PAR_OBJ) tests/reduce.c 
+	mkdir -p bin
+	$(CC) $(CFLAGS) $^ -o bin/reduce $(LIB) 
 
 clean:
 	rm -rf bin/* obj/*
