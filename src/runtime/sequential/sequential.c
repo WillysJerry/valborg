@@ -4,10 +4,10 @@
 #include <stdlib.h>
 #include <string.h> // For memcpy
 
-// 'p' is a pointer to a predicate used to mask out certain elements. It works kind of weird right now as it (on purpose) "squishes" the resulting array to ONLY contain the non-masked elements of 'a', which makes the mapping function act kind of funny (maybe). The predicate can also be NULL which makes this function perform a normal get communication.
-// I see two possible ways to tackle this problem, either we "squish" the resulting array from masked values, resulting in a smaller array:
+// 'p' is a pointer to a predicate used to mask out certain elements. For now the values of all masked element will be 0, which may or may not be a problem depending on how we want the out arrays to look. The predicate can also be NULL which makes this function perform a normal get communication.
+// I see two possible ways to tackle masking, either we "squish" the resulting array from masked values, resulting in a smaller array:
 // ------------------
-// A:  3  4 -1  5 -6  9     "forall i where i>0 do B[i] = A[i]" ???
+// A:  3  4 -1  5 -6  9     "forall i where i>0 do B[i] = A[i] }"
 //     |  |   _/ ____/
 //     v  v  v  v
 // B:  3  4  5  9
@@ -48,10 +48,11 @@ par_array seq_get(const par_array a, int (*f)(int i), int (*p)(int i)) {
 
 // This function has side-effects. Possible race condition if f(i) == f(j) for some i and j.
 // Another thing to consider is how the bounds of the two arrays should work together, maybe we only send the elements that are intersecting? For now this is ignored.
-void seq_send(par_array a, int (*f)(int i), const par_array b) {
+void seq_send(par_array a, int (*f)(int i), const par_array b, int (*p)(int i)) {
 	int len = length(a);
 	for(int i = 0; i < len; i++) {
-		a.a[i] = b.a[f(i)];
+		if(p == NULL || p(i))
+			a.a[i] = b.a[f(i)];
 	}
 }
 

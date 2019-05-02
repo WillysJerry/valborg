@@ -10,7 +10,7 @@
 
 par_array seq_get(const par_array a, int (*f)(int i), int (*p)(int i));
 
-void seq_send(par_array a, int (*f)(int i), const par_array b);
+void seq_send(par_array a, int (*f)(int i), const par_array b, int (*p)(int i));
 
 // Concatenates arrays a and b, resulting in a new array c where length(c) = length(a) + length(b)
 par_array seq_concat(const par_array a, const par_array b);

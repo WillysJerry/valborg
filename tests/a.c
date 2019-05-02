@@ -55,7 +55,7 @@ void test_get(const par_array A) {
 
 void test_send(const par_array A) {
 	par_array B = mk_array(NULL, 2, 7);
-	seq_send(B, src, A);
+	seq_send(B, src, A, NULL);
 
 	printf("#### Testing SEND ####\n");
 	for(int i = 0; i < 6; i++) {
@@ -197,9 +197,6 @@ void test_scan(const par_array A) {
 }
 
 int main(int argc, char** argv) {
-	int m = 0xbabeface;
-	int n = 0xbeefcab;
-
 	double arr[] = { 1.0, 2.0, 3.0, 4.0, 5.0, 6.0 };
 
 	// Never change A or shit wont work
