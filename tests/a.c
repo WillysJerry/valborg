@@ -176,7 +176,7 @@ void test_map3(const par_array A) {
 }
 
 void test_reduce(const par_array A) {
-	double red = seq_reduce(sum2, A);	
+	double red = seq_reduce(sum2, A, NULL);	
 	double acc = 0.0;
 	printf("#### Testing REDUCE ####\n");
 	for(int i = 0; i < length(A); i++) {

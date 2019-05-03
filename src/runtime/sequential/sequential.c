@@ -29,7 +29,7 @@ par_array seq_get(const par_array a, int (*f)(int i), int (*p)(int i)) {
 	
 	for(int i = 0; i < len; i++) {
 		// Make sure i satisfies predicate
-		if(p == NULL || p(i))
+		if(p == NULL || p(i + a.m))
 			memcpy(	arr + i,  		// dest
 				a.a + f(i), 		// src
 				sizeof(double));	// size
@@ -51,7 +51,9 @@ par_array seq_get(const par_array a, int (*f)(int i), int (*p)(int i)) {
 void seq_send(par_array a, int (*f)(int i), const par_array b, int (*p)(int i)) {
 	int len = length(a);
 	for(int i = 0; i < len; i++) {
-		if(p == NULL || p(i))
+		// Probably need to consider the fact that a.m and b.m may differ, which will make this act strange
+		// TODO: Fix this
+		if(p == NULL || p(i + a.m))
 			a.a[i] = b.a[f(i)];
 	}
 }
@@ -72,6 +74,7 @@ par_array seq_concat(const par_array a, const par_array b) {
 }
 
 par_array seq_select(const par_array a, int m, int n) {
+	// TODO: We don't take the 'm' of a into account here, need to fix this
 	par_array b = mk_array(a.a + m, m, n);
 
 	return b;
@@ -82,7 +85,7 @@ par_array seq_map1(double (*f)(double x), const par_array a, int (*p)(int i)) {
 	double* arr = (double*)calloc(len, sizeof(double));
 
 	for(int i = 0; i < len; i++) {
-		if(p == NULL || p(i))
+		if(p == NULL || p(i + a.m))
 			arr[i] = f(a.a[i]);
 	}
 
@@ -99,8 +102,8 @@ par_array seq_map2(double (*f)(double x, double y), const par_array a, const par
 	double* arr = (double*)calloc(len, sizeof(double));
 
 	for(int i = 0; i < len; i++) {
-		if(p == NULL || p(i))
-			arr[i] = f(a.a[i], b.a[i]);
+		if(p == NULL || (p(i + a.m) && p(i + b.m)))
+			arr[i] = f(a.a[i], b.a[i]);		// TODO: Need to take the 'm's into account
 	}
 
 	par_array res = mk_array(arr, a.m, a.n);
@@ -115,8 +118,8 @@ par_array seq_map3(double (*f)(double x, double y, double z), const par_array a,
 	double* arr = (double*)calloc(len, sizeof(double));
 
 	for(int i = 0; i < len; i++) {
-		if(p == NULL || p(i))
-		arr[i] = f(a.a[i], b.a[i], c.a[i]);
+		if(p == NULL || (p(i + a.m) && p(i + b.m) && p(i + c.m)))
+			arr[i] = f(a.a[i], b.a[i], c.a[i]);	// TODO: Need to take the 'm's into account
 	}
 
 	par_array res = mk_array(arr, a.m, a.n);
@@ -126,14 +129,25 @@ par_array seq_map3(double (*f)(double x, double y, double z), const par_array a,
 }
 
 // Sequential reduce and scan are basically linear pairwise applications of the function f over the input array
-double seq_reduce(double (*f)(double x, double y), const par_array a) {
-	double res = a.a[0];
-	for(int i = 1; i < length(a); i++) {
-		res = f(res, a.a[i]);	
+double seq_reduce(double (*f)(double x, double y), const par_array a, int (*p)(int i)) {
+	int i;
+	double res;
+	for(i = 0; i < length(a); i++) {
+		if(p == NULL || p(i + a.m)) {
+			res = a.a[i];
+			i++;
+			break;
+		}
+	}
+	for(; i < length(a); i++) {
+		if(p == NULL || p(i + a.m))
+			res = f(res, a.a[i]);	
 	}
 
 	return res;
 }
+
+// TODO: Add mask
 par_array seq_scan(double (*f)(double x, double y), const par_array a) {
 	double* arr = (double*)calloc(length(a), sizeof(double));
 

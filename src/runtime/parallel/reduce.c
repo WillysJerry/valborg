@@ -8,47 +8,51 @@
 
 // Evaluates one level of the reduction tree
 void reduce_thrd(distribution dist, int id, dist_ret* retval, void* f, void* p) {
+	int i;
+	double* res = NULL;
 	int size = dist.b_size[id];
-	double* res = (double*)calloc(1, sizeof(double));
 
 	double* A = dist.arrs[0] + dist.blocks[id];
-	*res = A[0]; 
+	int arrbase = dist.m + dist.blocks[id];
+	//*res = A[0]; 
+	
+	// Cast p pointer to predicate function
+	int (*pred)(int i) =
+		(int (*)(int)) p;
+
+	for(i = 0; i < size; i++) {
+		if(pred == NULL || pred(i + arrbase)) {
+			res = (double*)calloc(1, sizeof(double));
+			*res = A[i]; 
+			break;
+		}
+	}
 
 	// Handle base cases
-	if(size == 1) {
+	if(size == 0 || res == NULL) {
+		return;
+	}
+	else if(size == 1) {
 		retval->v = res;
 		retval->n = 1;
-		return;
-	} else if(size == 0) {
 		return;
 	}
 
 	// Cast void pointers to functions, this is not very readable
 	double (*func)(double x, double y) =
 		(double (*)(double x, double y)) f;
-	int (*pred)(int i) =
-		(int (*)(int)) p;
 
-	for(int i = 1; i < size; i++) {
-		*res = func(*res, A[i]);	
+	for(i += 1; i < size; i++) {
+		if(pred == NULL || pred(i + arrbase)) {
+			*res = func(*res, A[i]);	
+		}
 	}
+
 	retval->v = res;
 	retval->n = 1;
-	/*
-	int i, j;
-	for(i = 1, j = 0; i < size; i += 2, j++) {
-		arr[j] = func(A[i-1], A[i]);
-	}
-
-	if(size % 2 != 0)
-		arr[j] = A[i-1];
-
-	retval->v = arr;
-	retval->n = res_size;
-	*/
 }
 
-double par_reduce(double (*f)(double x, double y), const par_array a) {
+double par_reduce(double (*f)(double x, double y), const par_array a, int (*p)(int i)) {
 	distribution dist;
 	double result = 0.0;
 
@@ -58,7 +62,7 @@ double par_reduce(double (*f)(double x, double y), const par_array a) {
 	dist = distribute(&a, 1);
 
 	// TODO: Add predicate p to the expression below
-	ret = execute_in_parallel(reduce_thrd, dist, (void*)f, NULL);
+	ret = execute_in_parallel(reduce_thrd, dist, (void*)f, (void*)p);
 	merge_result(ret, &res_array);
 	free(ret);
 	free_distribution(dist);

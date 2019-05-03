@@ -23,7 +23,7 @@ par_array seq_map1(double (*f)(double x), const par_array a, int (*p)(int i));
 par_array seq_map2(double (*f)(double x, double y), const par_array a, const par_array b, int (*p)(int i));
 par_array seq_map3(double (*f)(double x, double y, double z), const par_array a, const par_array b, const par_array c, int (*p)(int i));
 
-double seq_reduce(double (*f)(double x, double y), const par_array a);
+double seq_reduce(double (*f)(double x, double y), const par_array a, int (*p)(int i));
 par_array seq_scan(double (*f)(double x, double y), const par_array a);
 
 // Returns a new array where the elements fulfill predicate p, should probably be changed somehow to be more useful.

@@ -25,12 +25,20 @@ double mul2(double x, double y) {
 	return x*y;
 }
 
+int gt4(int i) {
+	return i>4;
+}
+int gt100(int i) {
+	return i>100;
+}
+
 
 int main(int argc, char** argv) {
 	double r, r2; 	// Resulting scalar
 	double t0, t1;
 	double seq_t, par_t;
 	
+	double arr0[] = { 1.0, 2.0, 3.0, 4.0, 5.0, 6.0 };
 	double arr1[T1];
 	double arr2[T2];
 	double arr3[T3];
@@ -51,24 +59,34 @@ int main(int argc, char** argv) {
 	for(int i = 0; i < T4; i++) {
 		arr4[i] = (double)rand()/(double)(RAND_MAX / MAX);
 	}
+	const par_array S = mk_array(arr0, 3, 8);
 	const par_array A = mk_array(arr1, 0, T1-1);
 	const par_array B = mk_array(arr2, 0, T2-1);
 	const par_array C = mk_array(arr3, 0, T3-1);
 	const par_array D = mk_array(arr4, 0, T4-1);
+
+	printf("Initial test...\n");
+	r = par_reduce(sum2, S, gt4);
+	r2 = seq_reduce(sum2, S, gt4);
+	printf("%f %f\ndiff:%f\n", r, r2, fabs(r-r2));
 
 	printf("#### TEST 1 ####\n");
 	seq_t = 0.0;
 	par_t = 0.0;
 	for(int i = 0; i < N_TESTS; i++) {
 		t0 = get_time_usec();
-		r = par_reduce(sum2, A);
+		r = par_reduce(sum2, A, gt4);
 		t1 = get_time_usec();
 		par_t += get_timediff(t0, t1);
 
 		t0 = get_time_usec();
-		r2 = seq_reduce(sum2, A);
+		r2 = seq_reduce(sum2, A, gt4);
 		t1 = get_time_usec();
 		seq_t += get_timediff(t0, t1);
+		if(fabs(r - r2) > EPSILON) {
+			printf("%f %f\ndiff:%f\n", r, r2, fabs(r-r2));
+
+		}
 		assert(fabs(r - r2) <= EPSILON);
 	}
 	seq_t /= N_TESTS;
@@ -82,12 +100,12 @@ int main(int argc, char** argv) {
 	par_t = 0.0;
 	for(int i = 0; i < N_TESTS; i++) {
 		t0 = get_time_usec();
-		r = par_reduce(sum2, B);
+		r = par_reduce(sum2, B, gt4);
 		t1 = get_time_usec();
 		par_t += get_timediff(t0, t1);
 
 		t0 = get_time_usec();
-		r2 = seq_reduce(sum2, B);
+		r2 = seq_reduce(sum2, B, gt4);
 		t1 = get_time_usec();
 		seq_t += get_timediff(t0, t1);
 		assert(fabs(r - r2) <= EPSILON);
@@ -103,12 +121,12 @@ int main(int argc, char** argv) {
 	par_t = 0.0;
 	for(int i = 0; i < N_TESTS; i++) {
 		t0 = get_time_usec();
-		r = par_reduce(sum2, C);
+		r = par_reduce(sum2, C, gt4);
 		t1 = get_time_usec();
 		par_t += get_timediff(t0, t1);
 
 		t0 = get_time_usec();
-		r2 = seq_reduce(sum2, C);
+		r2 = seq_reduce(sum2, C, gt4);
 		t1 = get_time_usec();
 		seq_t += get_timediff(t0, t1);
 		assert(fabs(r - r2) <= EPSILON);
@@ -124,12 +142,12 @@ int main(int argc, char** argv) {
 	par_t = 0.0;
 	for(int i = 0; i < N_TESTS; i++) {
 		t0 = get_time_usec();
-		r = par_reduce(sum2, D);
+		r = par_reduce(sum2, D, gt100);
 		t1 = get_time_usec();
 		par_t += get_timediff(t0, t1);
 
 		t0 = get_time_usec();
-		r2 = seq_reduce(sum2, D);
+		r2 = seq_reduce(sum2, D, gt100);
 		t1 = get_time_usec();
 		seq_t += get_timediff(t0, t1);
 		assert(fabs(r - r2) <= EPSILON);

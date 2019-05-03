@@ -25,7 +25,7 @@ par_array par_map1(double (*f)(double x), const par_array a, int (*p)(int i));
 par_array par_map2(double (*f)(double x, double y), const par_array a, const par_array b, int (*p)(int i));
 par_array par_map3(double (*f)(double x, double y, double z), const par_array a, const par_array b, const par_array c, int (*p)(int i));
 
-double par_reduce(double (*f)(double x, double y), const par_array a);
+double par_reduce(double (*f)(double x, double y), const par_array a, int (*p)(int i));
 par_array par_scan(double (*f)(double x, double y), const par_array a);
 
 // Returns a new array where the elements fulfill predicate p, should probably be changed somehow to be more useful.
