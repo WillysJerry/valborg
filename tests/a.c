@@ -191,7 +191,7 @@ void test_reduce(const par_array A) {
 }
 
 void test_scan(const par_array A) {
-	par_array scan = seq_scan(sum2, A);	
+	par_array scan = seq_scan(sum2, A, NULL);	
 	double acc = 0.0;
 	printf("#### Testing SCAN ####\n");
 	for(int i = 0; i < length(A); i++) {

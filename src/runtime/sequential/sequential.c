@@ -47,7 +47,7 @@ par_array seq_get(const par_array a, int (*f)(int i), int (*p)(int i)) {
 // Another thing to consider is how the bounds of the two arrays should work together, maybe we only send the elements that are intersecting? For now this is ignored.
 // The source function maps GLOBAL SPACE indices.
 void seq_send(par_array a, int (*f)(int i), const par_array b, int (*p)(int i)) {
-	int i, j;
+	int i;
 
 	for(i = a.m; i < a.n + 1; i++) {
 		if(p == NULL || p(i)) {
@@ -144,7 +144,7 @@ par_array seq_map3(double (*f)(double x, double y, double z), const par_array a,
 // Sequential reduce and scan are basically linear pairwise applications of the function f over the input array
 double seq_reduce(double (*f)(double x, double y), const par_array a, int (*p)(int i)) {
 	int i;
-	double res;
+	double res = 0.0;
 	for(i = 0; i < length(a); i++) {
 		if(p == NULL || p(local_to_global(a, i))) {
 			res = a.a[i];
@@ -160,14 +160,28 @@ double seq_reduce(double (*f)(double x, double y), const par_array a, int (*p)(i
 	return res;
 }
 
-// TODO: Add mask.
-par_array seq_scan(double (*f)(double x, double y), const par_array a) {
+par_array seq_scan(double (*f)(double x, double y), const par_array a, int (*p)(int i)) {
+	int i;
 	double* arr = (double*)calloc(length(a), sizeof(double));
+	double acc = 0.0;
 
 	// a[0], f(a[0], a[1]), f(a[0], f(a[1], a[2])), ...
-	arr[0] = a.a[0];
-	for(int i = 1; i < length(a); i++) {
-		arr[i] = f(arr[i-1], a.a[i]);	
+	
+	// Find starting index (to which we don't apply f)
+	for(i = 0; i < length(a); i++) {
+		if(p == NULL || p(local_to_global(a, i))) {
+			arr[i] = acc = a.a[i];
+			i++;
+			break;
+		}	
+	}
+
+	// Scan through the remaining indices of the array
+	for(; i < length(a); i++) {
+		if(p == NULL || p(local_to_global(a, i))) {
+			acc = f(acc, a.a[i]);
+		}
+		arr[i] = acc;
 	}
 
 	par_array res = mk_array(arr, a.m, a.n);
