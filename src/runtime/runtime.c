@@ -19,3 +19,29 @@ par_array mk_array(const double* a, int m, int n) {
 int length(const par_array a) {
 	return a.n - a.m + 1;
 }
+
+// Indices in the range [m..n] to [0..length(a))
+int global_to_local(const par_array a, int i) {
+	return i - a.m;
+}
+// Indices in the range [0..length(a)) to [m..n]
+int local_to_global(const par_array a, int i) {
+	return a.m + i;
+}
+
+bounds intersection(const par_array* arrs, int n) {
+	bounds b;
+	
+	// Figure out where the arrays intersect
+	b.m = arrs[0].m;
+	b.n = arrs[0].n;
+
+	for(int i = 1; i < n; i++) {
+		if(arrs[i].m > b.m)
+			b.m = arrs[i].m;	
+		if(arrs[i].n < b.n)
+			b.n = arrs[i].n;
+	}
+
+	return b;
+}
