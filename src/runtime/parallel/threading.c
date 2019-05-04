@@ -8,15 +8,6 @@
 #include "../runtime.h"
 #include "../parallel.h"
 
-// Args to be passed to the worker functions assigned to each thread.
-typedef struct _worker_args {
-	int id;
-	void (*work)(distribution dist, int id, dist_ret* retval, void* f, void* p);	// Work to be executed on each thread
-	distribution dist;
-	void* f;				// Optional function
-	void* p;				// Optional predicate
-} worker_args;
-
 distribution distribute(const par_array* arr, int n) {
 	int 	i,
 		a_m, 		// The "m" of the distribution, the lowest intersecting index of all input arrays
@@ -89,8 +80,6 @@ void print_distribution(distribution dist) {
 		printf("|\n");
 	}
 }
-
-
 
 void merge_result(dist_ret** ret, par_array* result) {
 	int cnt = 0;
