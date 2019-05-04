@@ -28,6 +28,8 @@ int main(int argc, char** argv) {
 	const par_array B = mk_array(arr2, 0, 5);
 	const par_array C = mk_array(arr3, 0, 5);
 
+	init_par_env();
+
 	R = par_map1(square, A, NULL);
 	printf("Square A:\n");
 	for(int i = 0; i < length(R); i++) {
@@ -50,5 +52,6 @@ int main(int argc, char** argv) {
 	free(R.a);
 
 	printf("\n");
+	destroy_par_env();
 	return 0;
 }

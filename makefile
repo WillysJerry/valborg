@@ -4,7 +4,7 @@ LIB=-lpthread -lm
 
 GLOB_OBJ=obj/runtime.o
 SEQ_OBJ=obj/seq_sequential.o
-PAR_OBJ=obj/par_threading.o obj/par_parallel.o obj/par_map.o obj/par_get.o obj/par_reduce.o 
+PAR_OBJ=obj/par_threadpool.o obj/par_threading.o obj/par_parallel.o obj/par_map.o obj/par_get.o obj/par_reduce.o 
 #obj/par_map.o
 
 # Probably a good idea to make the "runtime" into a library or something instead of directly linking the object files (mostly because it's annoying and looks ugly, and also because it makes the most sense?)

@@ -24,8 +24,13 @@ distribution distribute(const par_array* arr, int n);
 void free_distribution(distribution dist);
 void print_distribution(distribution dist);
 
+void init_threadpool();
+void kill_threadpool();
+
 dist_ret** execute_in_parallel(void (*work)(distribution dist, int id, dist_ret* retval, void* f, void* p), distribution dist, void* f, void* p);
 
 void merge_result(dist_ret** ret, par_array* result);
+
+void barrier();
 
 #endif // THREADING_H

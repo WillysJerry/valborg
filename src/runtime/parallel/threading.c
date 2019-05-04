@@ -8,8 +8,6 @@
 #include "../runtime.h"
 #include "../parallel.h"
 
-pthread_t thrds[NUM_THREADS];
-
 // Args to be passed to the worker functions assigned to each thread.
 typedef struct _worker_args {
 	int id;
@@ -92,48 +90,7 @@ void print_distribution(distribution dist) {
 	}
 }
 
-//void* worker(int id, void(*f)(void* dist)) {
-void* worker(void* args) {
-	worker_args* a = (worker_args*)args;
-	dist_ret* retval = (dist_ret*)calloc(1, sizeof(dist_ret));
-	retval->n = 0;
-	a->work(a->dist, a->id, retval, a->f, a->p);
 
-	if(retval->n <= 0) {
-		free(retval);
-		retval = NULL;
-	}
-	pthread_exit((void*)retval);
-}
-
-dist_ret** execute_in_parallel(void (*work)(distribution dist, int id, dist_ret* retval, void* f, void* p), distribution dist, void* f, void* p) {
-	int s = 0;
-	worker_args* args = (worker_args*)calloc(NUM_THREADS, sizeof(worker_args));
-	for(int i = 0; i < NUM_THREADS; i++) {
-		args[i].id = i;
-		args[i].work = work;
-		args[i].dist = dist;
-		args[i].f = f;
-		args[i].p = p;
-
-		s = pthread_create(&thrds[i], NULL, worker, (void*)(args + i));
-		if(s != 0) {
-			// TODO: Handle this
-			printf("Thread %d failed to start.\n", i);
-		}
-	}
-
-	dist_ret** ret = (dist_ret**)calloc(NUM_THREADS, sizeof(dist_ret*));
-	
-	// Barrier. Wait for all active workers to finish
-	for(int i = 0; i < NUM_THREADS; i++) {
-		ret[i] = NULL;
-		pthread_join(thrds[i], (void**)(ret + i));
-	}
-	free(args);
-
-	return ret;
-}
 
 void merge_result(dist_ret** ret, par_array* result) {
 	int cnt = 0;
@@ -154,7 +111,7 @@ void merge_result(dist_ret** ret, par_array* result) {
 				result->a[cnt++] = ret[i]->v[j];
 			}
 			free(ret[i]->v);
-			free(ret[i]);
+			//free(ret[i]);
 		}
 	}
 }

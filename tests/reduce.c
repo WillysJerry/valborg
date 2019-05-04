@@ -45,6 +45,7 @@ int main(int argc, char** argv) {
 	double arr4[T4];
 
 	srand(time(0));
+	init_par_env();
 
 	// "Never repeat yourself"
 	for(int i = 0; i < T1; i++) {
@@ -157,5 +158,6 @@ int main(int argc, char** argv) {
 
 	log_benchmark(seq_t, par_t, T4, "+-reduce");
 	//printf("%f %f\ndiff:%f\n", r, r2, fabs(r-r2));
+	destroy_par_env();
 	return 0;
 }

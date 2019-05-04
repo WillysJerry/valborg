@@ -9,6 +9,8 @@
 #include "runtime.h"
 #include "parallel/threading.h"
 
+void init_par_env();
+void destroy_par_env();
 
 par_array par_get(const par_array a, int (*f)(int i), int (*p)(int i));
 
