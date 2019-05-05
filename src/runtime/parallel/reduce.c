@@ -7,7 +7,7 @@
 #include <math.h>
 
 // Evaluates one level of the reduction tree
-void reduce_thrd(distribution dist, int id, dist_ret* retval, void* f, void* p) {
+void reduce_thrd(distribution dist, int id, dist_ret* retval, void* f, void* p, void* args) {
 	int i;
 	double* res = NULL;
 	int size = dist.b_size[id];
@@ -61,8 +61,7 @@ double par_reduce(double (*f)(double x, double y), const par_array a, int (*p)(i
 
 	dist = distribute(&a, 1);
 
-	// TODO: Add predicate p to the expression below
-	ret = execute_in_parallel(reduce_thrd, dist, (void*)f, (void*)p);
+	ret = execute_in_parallel(reduce_thrd, dist, (void*)f, (void*)p, NULL);
 	merge_result(ret, &res_array);
 	free(ret);
 	free_distribution(dist);

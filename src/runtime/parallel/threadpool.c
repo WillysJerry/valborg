@@ -10,10 +10,11 @@
 
 // Instructions to be used each time a thread in the threadpool is activated 
 typedef struct _instruction {
-	void (*work)(distribution dist, int id, dist_ret* retval, void* f, void* p);	// Work to be executed on each thread
+	void (*work)(distribution dist, int id, dist_ret* retval, void* f, void* p, void* args);	// Work to be executed on each thread
 	distribution dist;
 	void* f;				// Optional function
 	void* p;				// Optional predicate
+	void* args;
 } instruction; 
 
 typedef struct _threadinfo {
@@ -64,7 +65,7 @@ void worker(void* args) {
 
 		retval->n = 0;
 		retval->v = NULL;
-		instr->work(instr->dist, id, retval, instr->f, instr->p);
+		instr->work(instr->dist, id, retval, instr->f, instr->p, instr->args);
 		barrier();
 	}
 	free(retval);
@@ -101,7 +102,7 @@ void kill_threadpool() {
 		pthread_join(thrds[i].thread, NULL);
 }
 
-dist_ret** execute_in_parallel(void (*work)(distribution dist, int id, dist_ret* retval, void* f, void* p), distribution dist, void* f, void* p) {
+dist_ret** execute_in_parallel(void (*work)(distribution dist, int id, dist_ret* retval, void* f, void* p), distribution dist, void* f, void* p, void* args) {
 	dist_ret** ret = (dist_ret**)calloc(NUM_THREADS, sizeof(dist_ret*));
 	int s = 0;
 
@@ -110,6 +111,7 @@ dist_ret** execute_in_parallel(void (*work)(distribution dist, int id, dist_ret*
 		thrds[i].instr.f = f;
 		thrds[i].instr.p = p;
 		thrds[i].instr.dist = dist;
+		thrds[i].instr.args = args;
 	}
 
 	// Barrier. Wait for all active workers to finish

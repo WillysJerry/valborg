@@ -7,7 +7,7 @@
 /*
  * Individual worker functions (Local-view)
  */
-void map_thrd(distribution dist, int id, dist_ret* retval, void* f, void* p) {
+void map_thrd(distribution dist, int id, dist_ret* retval, void* f, void* p, void* args) {
 	int size = dist.b_size[id];
 	double* arr = (double*)calloc(dist.b_size[id], sizeof(double));
 
@@ -30,7 +30,7 @@ void map_thrd(distribution dist, int id, dist_ret* retval, void* f, void* p) {
 	retval->v = arr;
 	retval->n = size;
 }
-void map2_thrd(distribution dist, int id, dist_ret* retval, void* f, void* p) {
+void map2_thrd(distribution dist, int id, dist_ret* retval, void* f, void* p, void* args) {
 	int size = dist.b_size[id];
 	double* arr = (double*)calloc(dist.b_size[id], sizeof(double));
 
@@ -54,7 +54,7 @@ void map2_thrd(distribution dist, int id, dist_ret* retval, void* f, void* p) {
 	retval->v = arr;
 	retval->n = size;
 }
-void map3_thrd(distribution dist, int id, dist_ret* retval, void* f, void* p) {
+void map3_thrd(distribution dist, int id, dist_ret* retval, void* f, void* p, void* args) {
 	int size = dist.b_size[id];
 	double* arr = (double*)calloc(dist.b_size[id], sizeof(double));
 
@@ -91,7 +91,7 @@ par_array par_map1(double (*f)(double x), const par_array a, int (*p)(int i)) {
 
 
 	// Start parallel execution
-	dist_ret** ret = execute_in_parallel(map_thrd, dist, (void*)f, (void*)p);
+	dist_ret** ret = execute_in_parallel(map_thrd, dist, (void*)f, (void*)p, NULL);
 
 	result.a = NULL;	// If none of the input arrays index sets intersect, we'll return a NULL pointer 
 	result.m = dist.m;	
@@ -113,7 +113,7 @@ par_array par_map2(double (*f)(double x, double y), const par_array a, const par
 	distribution dist = distribute(arrs, 2);
 
 	// Start parallel execution
-	dist_ret** ret = execute_in_parallel(map2_thrd, dist, (void*)f, (void*)p);
+	dist_ret** ret = execute_in_parallel(map2_thrd, dist, (void*)f, (void*)p, NULL);
 
 	result.a = NULL;	// If none of the input arrays index sets intersect, we'll return a NULL pointer 
 	result.m = dist.m;	
@@ -133,7 +133,7 @@ par_array par_map3(double (*f)(double x, double y, double z), const par_array a,
 	distribution dist = distribute(arrs, 3);
 
 	// Start parallel execution
-	dist_ret** ret = execute_in_parallel(map3_thrd, dist, (void*)f, (void*)p);
+	dist_ret** ret = execute_in_parallel(map3_thrd, dist, (void*)f, (void*)p, NULL);
 
 	result.a = NULL;	// If none of the input arrays index sets intersect, we'll return a NULL pointer 
 	result.m = dist.m;	

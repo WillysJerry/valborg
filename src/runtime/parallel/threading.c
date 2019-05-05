@@ -65,6 +65,15 @@ void free_distribution(distribution dist) {
 	free(dist.arrs);
 }
 
+int global_to_local_block(const distribution a, int block_id, int i) {
+	return i - a.m - a.blocks[block_id];
+
+}
+int local_to_global_block(const distribution a, int block_id, int i) {
+	return a.m + a.blocks[block_id] + i;
+
+}
+
 void print_distribution(distribution dist) {
 	int indx;
 	for(int i = 0; i < dist.n_arrs; i++) {

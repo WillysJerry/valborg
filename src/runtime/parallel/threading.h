@@ -15,6 +15,7 @@ typedef struct _distribution {
 	int blocks[NUM_THREADS];	// Starting indices of the blocks
 } distribution;
 
+
 typedef struct _dist_ret {
 	double* v;
 	int n;
@@ -24,10 +25,13 @@ distribution distribute(const par_array* arr, int n);
 void free_distribution(distribution dist);
 void print_distribution(distribution dist);
 
+int global_to_local_block(const distribution a, int block_id, int i);
+int local_to_global_block(const distribution a, int block_id, int i);
+
 void init_threadpool();
 void kill_threadpool();
 
-dist_ret** execute_in_parallel(void (*work)(distribution dist, int id, dist_ret* retval, void* f, void* p), distribution dist, void* f, void* p);
+dist_ret** execute_in_parallel(void (*work)(distribution dist, int id, dist_ret* retval, void* f, void* p, void* args), distribution dist, void* f, void* p, void* args);
 
 void merge_result(dist_ret** ret, par_array* result);
 
