@@ -4,6 +4,7 @@
 #include <stdlib.h>
 #include <string.h> // For memcpy
 
+
 // 'p' is a pointer to a predicate used to mask out certain elements. For now the values of all masked element will be 0, which may or may not be a problem depending on how we want the out arrays to look. The predicate can also be NULL which makes this function perform a normal get communication.
 // I see two possible ways to tackle masking, either we "squish" the resulting array from masked values, resulting in a smaller array:
 // ------------------
@@ -19,25 +20,23 @@
 //     v  v  v  v  v  v
 // B:  3  4  0  5  0  9
 // ------------------
-par_array seq_get(const par_array a, int (*f)(int i), int (*p)(int i)) {
+par_array seq_get(const par_array a, int (*f)(int i), int (*p)(int i, double x)) {
 	// TODO: A good idea might be to set the bounds (m..n) of the output array dynamically based on the mapping function,
 	// as this might allow for easy shifting of arrays by for instance mapping i->(i+1), which would mean that the output m
 	// should be m+1 and the out n should be n+1 (rather then keeping them the same as the in array). 
 
 	// Allocate temp array
 	par_array b = mk_array(NULL, a.m, a.n);
-	//maybe* arr = (maybe*)calloc(len, sizeof(maybe));
+	int src_i;
 
 	for(int i = a.m; i < a.n + 1; i++) {
-		if(p == NULL || p(i)) {
+		src_i = G2L(a, f(i));
+		if(SATISFIES(p, i, VAL(a.a[src_i]))) {
 			memcpy(	b.a + G2L(b, i),
-				a.a + G2L(a, f(i)),
+				a.a + G2L(a, src_i),
 				sizeof(maybe));
 		}
 	}
-
-	//par_array b = mk_array(arr, a.m, a.n); 
-	//free(arr);
 
 	return b;
 }
@@ -45,13 +44,16 @@ par_array seq_get(const par_array a, int (*f)(int i), int (*p)(int i)) {
 // This function has side-effects. Possible race condition if f(i) == f(j) for some i and j.
 // Another thing to consider is how the bounds of the two arrays should work together, maybe we only send the elements that are intersecting? For now this is ignored.
 // The source function maps GLOBAL SPACE indices.
-void seq_send(par_array a, int (*f)(int i), const par_array b, int (*p)(int i)) {
+void seq_send(par_array a, int (*f)(int i), const par_array b, int (*p)(int i, double lhs, double rhs)) {
 	int i;
+	int dst_i, src_i;
 
 	for(i = a.m; i < a.n + 1; i++) {
-		if(p == NULL || p(i)) {
+		dst_i = G2L(a, f(i));
+		src_i = G2L(b, i);
+		if(SATISFIES(p, i, VAL(a.a[dst_i]), VAL(b.a[src_i]))) {
 			// Need to convert from global to local index space
-			a.a[G2L(a, i)] = b.a[G2L(b, f(i))];
+			a.a[dst_i] = b.a[src_i];
 		}
 	}	
 }
@@ -75,17 +77,20 @@ par_array seq_select(const par_array a, int m, int n) {
 	return clone_array(a, m, n);
 }
 
-par_array seq_map1(double (*f)(double x), const par_array a, int (*p)(int i)) {
+par_array seq_map1(double (*f)(double x), const par_array a, int (*p)(int i, double x)) {
 	int i, j;
 	par_array arr = mk_array(NULL, a.m, a.n);
 
+	maybe x;
+
+	// i is a "global" index (i.e something between m..n)
+	// j is a "local" index (i.e something from 0..something)
 	for(i = a.m, j = 0 ; i < a.n + 1; i++, j++) {
-		if(IS_SOME(a.a[G2L(a, i)])) {
-			// i is a "global" index (i.e something between m..n)
-			// j is a "local" index (i.e something from 0..something)
-			if(p == NULL || p(i)) {
-				arr.a[j] = SOME( f(VAL(a.a[G2L(a, i)])) );
-			}
+		x = a.a[G2L(a, i)];
+		if(IS_SOME(x) && 
+		    SATISFIES(p, i, VAL(x))) {
+
+			arr.a[j] = SOME( f(VAL(x)) );
 		} else {
 			arr.a[j] = NONE;
 		}
@@ -95,21 +100,26 @@ par_array seq_map1(double (*f)(double x), const par_array a, int (*p)(int i)) {
 }
 
 // How to handle these (map2, map3)? Should arrays of different sizes be allowed? Also how will it work with index bounds?
-par_array seq_map2(double (*f)(double x, double y), const par_array a, const par_array b, int (*p)(int i)) {
+par_array seq_map2(double (*f)(double x, double y), const par_array a, const par_array b, int (*p)(int i, double x, double y)) {
 	int i, j;
 	const par_array arrs[] = {a, b};
 	bounds rng = intersection( arrs, 2 );
 
 	par_array arr = mk_array(NULL, rng.m, rng.n);
 
+	maybe x, y;
+
+	// i is a "global" index (i.e something between m..n)
+	// j is a "local" index (i.e something from 0..something)
 	for(i = rng.m, j = 0 ; i < rng.n + 1; i++, j++) {
-		if(IS_SOME(a.a[G2L(a, i)] ) && IS_SOME(b.a[G2L(a, i)])) {
-			// i is a "global" index (i.e something between m..n)
-			// j is a "local" index (i.e something from 0..something)
-			if(p == NULL || p(i)) {
-				arr.a[j] = SOME(f(	VAL(a.a[G2L(a, i)]), 
-							VAL(b.a[G2L(b, i)])));
-			}
+		x = a.a[G2L(a, i)];
+		y = b.a[G2L(b, i)];
+		if(IS_SOME(x)  && 
+		    IS_SOME(y) &&
+		    SATISFIES(p, i, VAL(x), VAL(y))) {
+
+			arr.a[j] = SOME(f(	VAL(x), 
+						VAL(y)));
 		} else {
 			arr.a[j] = NONE;
 		}
@@ -118,21 +128,27 @@ par_array seq_map2(double (*f)(double x, double y), const par_array a, const par
 	return arr;
 }
 
-par_array seq_map3(double (*f)(double x, double y, double z), const par_array a, const par_array b, const par_array c, int (*p)(int i)) {
+par_array seq_map3(double (*f)(double x, double y, double z), const par_array a, const par_array b, const par_array c, int (*p)(int i, double x, double y, double z)) {
 	int i, j;
 	const par_array arrs[] = {a, b, c};
 	bounds rng = intersection( arrs, 3 );
 	par_array arr = mk_array(NULL, rng.m, rng.n);
 
+	maybe x, y, z;
+
+	// i is a "global" index (i.e something between m..n)
+	// j is a "local" index (i.e something from 0..something)
 	for(i = rng.m, j = 0 ; i < rng.n + 1; i++, j++) {
-		if(IS_SOME(a.a[G2L(a, i)] ) && IS_SOME(b.a[G2L(a, i)]) && IS_SOME(c.a[G2L(a, i)])) {
-			// i is a "global" index (i.e something between m..n)
-			// j is a "local" index (i.e something from 0..something)
-			if(p == NULL || p(i)) {
-				arr.a[j] = SOME(f(	VAL(a.a[G2L(a, i)]), 
-							VAL(b.a[G2L(b, i)]), 
-							VAL(c.a[G2L(c, i)])));
-			}
+		x = a.a[G2L(a, i)];
+		y = b.a[G2L(b, i)];
+		z = c.a[G2L(c, i)];
+
+		if(IS_SOME(x) && 
+		    IS_SOME(y) && 
+		    IS_SOME(z) &&
+		    SATISFIES(p, i, VAL(x), VAL(y), VAL(z))) {
+
+			arr.a[j] = SOME(f(VAL(x), VAL(y), VAL(z))); 
 		} else {
 			arr.a[j] = NONE;
 		}
@@ -142,21 +158,22 @@ par_array seq_map3(double (*f)(double x, double y, double z), const par_array a,
 }
 
 // Sequential reduce and scan are basically linear pairwise applications of the function f over the input array
-double seq_reduce(double (*f)(double x, double y), const par_array a, int (*p)(int i)) {
+double seq_reduce(double (*f)(double x, double y), const par_array a, int (*p)(int i, double x)) {
 	int i;
 	double res = 0.0;
 	for(i = 0; i < length(a); i++) {
-		if(IS_SOME(a.a[i])) {
-			if(p == NULL || p(L2G(a, i))) {
-				res = VAL(a.a[i]);
-				i++;
-				break;
-			}
+		if(IS_SOME(a.a[i]) && 
+		    SATISFIES(p, L2G(a, i), VAL(a.a[i]))) {
+
+			res = VAL(a.a[i]);
+			i++;
+			break;
 		}
 	}
 	for(; i < length(a); i++) {
-		if(IS_SOME(a.a[i])) {
-			if(p == NULL || p(L2G(a, i)))
+		if(IS_SOME(a.a[i]) && 
+		    SATISFIES(p, L2G(a, i), VAL(a.a[i]))) {
+
 				res = f(res, VAL(a.a[i]));	
 		}
 	}
@@ -164,7 +181,7 @@ double seq_reduce(double (*f)(double x, double y), const par_array a, int (*p)(i
 	return res;
 }
 
-par_array seq_scan(double (*f)(double x, double y), const par_array a, int (*p)(int i)) {
+par_array seq_scan(double (*f)(double x, double y), const par_array a, int (*p)(int i, double x)) {
 	int i;
 	par_array arr = mk_array(NULL, a.m, a.n);
 	double acc = 0.0;
@@ -173,23 +190,21 @@ par_array seq_scan(double (*f)(double x, double y), const par_array a, int (*p)(
 	
 	// Find starting index (to which we don't apply f)
 	for(i = 0; i < length(a); i++) {
-		if(IS_SOME(a.a[i])) {
-			if(p == NULL || p(local_to_global(a, i))) {
-				acc = VAL(a.a[i]);
-				arr.a[i] = SOME(acc);
-				i++;
-				break;
-			}	
-		}
+		if(IS_SOME(a.a[i]) &&
+		    SATISFIES(p, L2G(a, i), VAL(a.a[i]))) {
+			acc = VAL(a.a[i]);
+			arr.a[i] = SOME(acc);
+			i++;
+			break;
+		}	
 	}
 
 	// Scan through the remaining indices of the array
 	for(; i < length(a); i++) {
-		if(IS_SOME(a.a[i])) {
-			if(p == NULL || p(local_to_global(a, i))) {
-				acc = f(acc, VAL(a.a[i]));
-			}
-			arr.a[i] = SOME(acc);
+		if(IS_SOME(a.a[i]) &&
+		    SATISFIES(p, L2G(a, i), VAL(a.a[i]))) {
+
+			acc = f(acc, VAL(a.a[i]));
 		} else {
 			arr.a[i] = SOME(acc);
 		}

@@ -18,8 +18,8 @@
 #define N_TESTS 1000
 #define MAX 10
 
-int even(int i) {
-	return i % 2 == 0;
+int lt5(int i, double x) {
+	return x < 5.0;
 }
 
 int dst(int i) {
@@ -33,6 +33,7 @@ int src1(int i) {
 int main(int argc, char** argv) {
 	double t0, t1;
 	double seq_t, par_t;
+	int cnv;
 
 	par_array R1, R2; 	// Resulting array
 
@@ -51,19 +52,24 @@ int main(int argc, char** argv) {
 	par_t = 0.0;
 	for(int i = 0; i < N_TESTS; i++) {
 		t0 = get_time_usec();
-		R1 = par_get(A, dst, NULL);
+		R1 = par_get(A, src1, lt5);
 		t1 = get_time_usec();
 		par_t += get_timediff(t0, t1);
 
 		t0 = get_time_usec();
-		R2 = seq_get(A, dst, NULL);
+		R2 = seq_get(A, src1, lt5);
 		t1 = get_time_usec();
 		seq_t += get_timediff(t0, t1);
 
 		for(int i = 0; i < T1; i++) {
-			//printf("%.1f, %.1f, \n", VAL(A.a[i]), VAL(R1.a[i]));
-			assert(abs(VAL(R1.a[i]) - VAL(A.a[i])) <= EPSILON);
-			assert(abs(VAL(R2.a[i]) - VAL(A.a[i])) <= EPSILON);
+			// Source function takes a global index, so we need to convert i (which is
+			// a local index) to global space, and then apply the src function on that,
+			// and then convert the resulting index back to local space.........
+			cnv = G2L(A, src1(L2G(A, i)) );
+			if(lt5(i, VAL(A.a[cnv]))) {
+				assert(abs(VAL(R1.a[i]) - VAL(A.a[cnv])) <= EPSILON);
+				assert(abs(VAL(R2.a[i]) - VAL(A.a[cnv])) <= EPSILON);
+			}
 		}
 
 		free(R1.a);

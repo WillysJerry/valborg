@@ -25,13 +25,11 @@ double mul2(double x, double y) {
 	return x*y;
 }
 
-int gt4(int i) {
-	//return i>4;
-	return 1 == 1;
+int gt4(int i, double x) {
+	return x>4;
 }
-int gt100(int i) {
-	//return i>100;
-	return 1 == 1;
+int gt100(int i, double x) {
+	return x>100;
 }
 
 

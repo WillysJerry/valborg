@@ -18,6 +18,9 @@
 #define L2G(A, i) ( (A).m + (i) )
 #define G2L(A, i) ( (i) - (A).m )
 
+// Macro for predicate checking
+#define SATISFIES(P, ...) ( ((P) == NULL || (P(__VA_ARGS__)) ) )
+
 typedef struct _bounds {
 	int m, n;
 } bounds;

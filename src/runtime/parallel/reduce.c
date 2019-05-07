@@ -16,16 +16,14 @@ void reduce_thrd(distribution dist, int id, par_array* out, void* f, void* p, vo
 	int arrbase = dist.m + dist.blocks[id];
 	
 	// Cast p pointer to predicate function
-	int (*pred)(int i) =
-		(int (*)(int)) p;
+	int (*pred)(int i, double x) =
+		(int (*)(int, double)) p;
 
 
 	for(i = 0; i < size; i++) {
-		if(IS_SOME(A[i])) {
-			if(pred == NULL || pred(i + arrbase)) {
-				res = VAL(A[i]); 
-				break;
-			}
+		if(IS_SOME(A[i]) && SATISFIES(pred, i + arrbase, VAL(A[i]))) {
+			res = VAL(A[i]); 
+			break;
 		}
 	}
 
@@ -44,17 +42,15 @@ void reduce_thrd(distribution dist, int id, par_array* out, void* f, void* p, vo
 		(double (*)(double x, double y)) f;
 
 	for(i += 1; i < size; i++) {
-		if(IS_SOME(A[i])) {
-			if(pred == NULL || pred(i + arrbase)) {
-				res = func(res, VAL(A[i]));	
-			}
+		if(IS_SOME(A[i]) && SATISFIES(pred, i + arrbase, VAL(A[i]))) {
+			res = func(res, VAL(A[i]));	
 		}
 	}
 
 	out->a[id] = SOME(res);
 }
 
-double par_reduce(double (*f)(double x, double y), const par_array a, int (*p)(int i)) {
+double par_reduce(double (*f)(double x, double y), const par_array a, int (*p)(int i, double x)) {
 	distribution dist;
 	double result = 0.0;
 
