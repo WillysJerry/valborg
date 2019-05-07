@@ -10,18 +10,19 @@
 
 // Instructions to be used each time a thread in the threadpool is activated 
 typedef struct _instruction {
-	void (*work)(distribution dist, int id, dist_ret* retval, void* f, void* p, void* args);	// Work to be executed on each thread
-	distribution dist;
+	void (*work)(distribution dist, int id, par_array* out, void* f, void* p, void* args);	// Work to be executed on each thread
 	void* f;				// Optional function
 	void* p;				// Optional predicate
 	void* args;
-} instruction; 
+	distribution dist;
+	par_array* output;
+} instruction;
 
 typedef struct _threadinfo {
 	int 		id;
 	pthread_t 	thread;
 	instruction 	instr;
-	dist_ret*	retval;
+	par_array	retval;
 } threadinfo;
 
 threadinfo thrds[NUM_THREADS];
@@ -31,6 +32,8 @@ char kill_threads = 	0;	// Condition for destroying all active worker threads
 
 pthread_cond_t barrier_cond;
 pthread_mutex_t barrier_mutex;
+
+instruction global_instruction;
 
 void barrier() {
 	pthread_mutex_lock(&barrier_mutex);
@@ -48,41 +51,40 @@ void barrier() {
 	pthread_mutex_unlock(&barrier_mutex);
 }
 
-void worker(void* args) {
+void* worker(void* args) {
 	int 		id;
-	instruction* 	instr;
-	dist_ret*	retval;
+	instruction 	instr;
 
+	//id = *(int*)args;
 	id = (int)args;
-
-	instr = &(thrds[id].instr);
-	retval = thrds[id].retval;
 
 	for(;;) {
 		barrier();
 		if(kill_threads == 1)
 			break;
 
-		retval->n = 0;
-		retval->v = NULL;
-		instr->work(instr->dist, id, retval, instr->f, instr->p, instr->args);
+		// Fetch instruction
+		instr = global_instruction;
+
+		instr.work(instr.dist, id, instr.output, instr.f, instr.p, instr.args);
 		barrier();
 	}
-	free(retval);
 	pthread_exit(NULL);
+	return NULL;
 }
 
 void init_thread(int id, threadinfo* out_info) {
 	int s;
 
-	s = pthread_create(&(out_info->thread), NULL, worker, (void*)(id));
+	int arg = id;
+	s = pthread_create(&(out_info->thread), NULL, worker, (void*)arg);
 	if(s != 0) {
 		// TODO: Handle this
 		printf("Thread %d failed to start.\n", id);
 	}
 
 	out_info->id = id;
-	out_info->retval = (dist_ret*)calloc(1, sizeof(dist_ret));
+	//out_info->retval = (dist_ret*)calloc(1, sizeof(dist_ret));
 }
 
 void init_threadpool() {
@@ -102,23 +104,21 @@ void kill_threadpool() {
 		pthread_join(thrds[i].thread, NULL);
 }
 
-dist_ret** execute_in_parallel(void (*work)(distribution dist, int id, dist_ret* retval, void* f, void* p), distribution dist, void* f, void* p, void* args) {
-	dist_ret** ret = (dist_ret**)calloc(NUM_THREADS, sizeof(dist_ret*));
-	int s = 0;
+par_array execute_in_parallel(void (*work)(distribution dist, int id, par_array* out, void* f, void* p, void* args), distribution dist, int out_m, int out_n, void* f, void* p, void* args) {
 
-	for(int i = 0; i < NUM_THREADS; i++) {
-		thrds[i].instr.work = work;
-		thrds[i].instr.f = f;
-		thrds[i].instr.p = p;
-		thrds[i].instr.dist = dist;
-		thrds[i].instr.args = args;
-	}
+	par_array ret = mk_array(NULL, out_m, out_n);
+
+	global_instruction.work = work;
+	global_instruction.f 	= f;
+	global_instruction.p	= p;
+	global_instruction.args = args;
+	global_instruction.dist = dist;
+	global_instruction.output = &ret;
 
 	// Barrier. Wait for all active workers to finish
 	barrier();
-	for(int i = 0; i < NUM_THREADS; i++) {
-		ret[i] = thrds[i].retval;
-	}
+	// Worker threads perform their
+	// work here
 	barrier();
 
 	return ret;

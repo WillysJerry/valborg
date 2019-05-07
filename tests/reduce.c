@@ -26,10 +26,12 @@ double mul2(double x, double y) {
 }
 
 int gt4(int i) {
-	return i>4;
+	//return i>4;
+	return 1 == 1;
 }
 int gt100(int i) {
-	return i>100;
+	//return i>100;
+	return 1 == 1;
 }
 
 

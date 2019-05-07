@@ -4,11 +4,13 @@ LIB=-lpthread -lm
 
 GLOB_OBJ=obj/runtime.o
 SEQ_OBJ=obj/seq_sequential.o
-PAR_OBJ=obj/par_threadpool.o obj/par_threading.o obj/par_parallel.o obj/par_map.o obj/par_get.o obj/par_reduce.o 
+#PAR_OBJ=obj/par_threadpool.o obj/par_threading.o obj/par_parallel.o obj/par_map.o obj/par_get.o obj/par_reduce.o 
+PAR_OBJ=obj/par_threadpool.o obj/par_threading.o obj/par_parallel.o obj/par_reduce.o obj/par_concat.o 
 #obj/par_map.o
 
 # Probably a good idea to make the "runtime" into a library or something instead of directly linking the object files (mostly because it's annoying and looks ugly, and also because it makes the most sense?)
-tests: test_a test_map test_reduce test_communication
+tests: test_reduce test_concat
+#test_a test_map test_reduce test_communication
 
 # Prefix all sequential runtime object files with seq_
 obj/seq_%.o: src/runtime/sequential/%.c
@@ -36,6 +38,10 @@ test_map: $(GLOB_OBJ) $(SEQ_OBJ) $(PAR_OBJ) tests/map.c
 test_reduce: $(GLOB_OBJ) $(SEQ_OBJ) $(PAR_OBJ) tests/reduce.c 
 	mkdir -p bin
 	$(CC) $(CFLAGS) $^ -o bin/reduce $(LIB) 
+
+test_concat: $(GLOB_OBJ) $(SEQ_OBJ) $(PAR_OBJ) tests/concat.c 
+	mkdir -p bin
+	$(CC) $(CFLAGS) $^ -o bin/concat $(LIB) 
 
 test_communication: $(GLOB_OBJ) $(SEQ_OBJ) $(PAR_OBJ) tests/communication.c 
 	mkdir -p bin

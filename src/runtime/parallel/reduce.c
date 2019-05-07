@@ -7,34 +7,32 @@
 #include <math.h>
 
 // Evaluates one level of the reduction tree
-void reduce_thrd(distribution dist, int id, dist_ret* retval, void* f, void* p, void* args) {
+void reduce_thrd(distribution dist, int id, par_array* out, void* f, void* p, void* args) {
 	int i;
-	double* res = NULL;
+	double res = 0.0;
 	int size = dist.b_size[id];
 
-	double* A = dist.arrs[0] + dist.blocks[id];
+	double* A = dist.arrs[0].a + dist.blocks[id];
 	int arrbase = dist.m + dist.blocks[id];
-	//*res = A[0]; 
 	
 	// Cast p pointer to predicate function
 	int (*pred)(int i) =
 		(int (*)(int)) p;
 
+
 	for(i = 0; i < size; i++) {
 		if(pred == NULL || pred(i + arrbase)) {
-			res = (double*)calloc(1, sizeof(double));
-			*res = A[i]; 
+			res = A[i]; 
 			break;
 		}
 	}
 
 	// Handle base cases
-	if(size == 0 || res == NULL) {
+	if(size == 0 || i == size) {
 		return;
 	}
 	else if(size == 1) {
-		retval->v = res;
-		retval->n = 1;
+		out->a[id] = res;
 		return;
 	}
 
@@ -44,32 +42,29 @@ void reduce_thrd(distribution dist, int id, dist_ret* retval, void* f, void* p, 
 
 	for(i += 1; i < size; i++) {
 		if(pred == NULL || pred(i + arrbase)) {
-			*res = func(*res, A[i]);	
+			res = func(res, A[i]);	
 		}
 	}
 
-	retval->v = res;
-	retval->n = 1;
+	out->a[id] = res;
 }
 
 double par_reduce(double (*f)(double x, double y), const par_array a, int (*p)(int i)) {
 	distribution dist;
 	double result = 0.0;
 
-	dist_ret** ret = NULL;
 	par_array res_array;
 
-	dist = distribute(&a, 1);
+	dist = distribute(&a, 1, DISTRIBUTION_STRICT);
 
-	ret = execute_in_parallel(reduce_thrd, dist, (void*)f, (void*)p, NULL);
-	merge_result(ret, &res_array);
-	free(ret);
-	free_distribution(dist);
+	res_array = execute_in_parallel(reduce_thrd, dist, 0, 3, (void*)f, (void*)p, NULL);
 
 	result = res_array.a[0];
-	for(int i = 1; i < length(res_array); i++) {
+	for(int i = 1; i < NUM_THREADS; i++) {
 		result = f(result, res_array.a[i]);	
 	}
 
+	free_distribution(dist);
+	free(res_array.a);
 	return result;
 }

@@ -9,6 +9,10 @@
 #include "runtime.h"
 #include "parallel/threading.h"
 
+// Macros for converting between (L)ocal and (G)lobal indices in array A
+#define L2G(A, i) ( (A).m + (i) )
+#define G2L(A, i) ( (i) - (A).m )
+
 void init_par_env();
 void destroy_par_env();
 
