@@ -14,8 +14,8 @@
 #define T2 3444
 #define T3 63595 
 #define T4 800000
-#define N_TESTS 100
-#define MAX 1000
+#define N_TESTS 1000
+#define MAX 100
 
 double sum2(double x, double y) {
 	return x+y;
@@ -26,7 +26,8 @@ double mul2(double x, double y) {
 }
 
 int gt4(int i) {
-	return i>4;
+	//return i>4;
+	return 1;
 }
 int gt100(int i) {
 	return i>100;
@@ -38,7 +39,7 @@ int main(int argc, char** argv) {
 	double t0, t1;
 	double seq_t, par_t;
 	
-	double arr0[] = { 1.0, 2.0, 3.0, 4.0, 5.0, 6.0 };
+	double arr0[] = { 1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0 };
 	double arr1[T1];
 	double arr2[T2];
 	double arr3[T3];
@@ -60,7 +61,7 @@ int main(int argc, char** argv) {
 	for(int i = 0; i < T4; i++) {
 		arr4[i] = (double)rand()/(double)(RAND_MAX / MAX);
 	}
-	const par_array S = mk_array(arr0, 3, 8);
+	const par_array S = mk_array(arr0, 3, 9);
 	const par_array A = mk_array(arr1, 0, T1-1);
 	const par_array B = mk_array(arr2, 0, T2-1);
 	const par_array C = mk_array(arr3, 0, T3-1);

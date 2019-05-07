@@ -113,3 +113,4 @@ void merge_result(dist_ret** ret, par_array* result) {
 		}
 	}
 }
+

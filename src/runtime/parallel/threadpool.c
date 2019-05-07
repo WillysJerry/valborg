@@ -5,13 +5,17 @@
 #include <pthread.h>
 #include <stdio.h>
 
+#include <math.h>
+
 #include "../runtime.h"
 #include "../parallel.h"
 
 // Instructions to be used each time a thread in the threadpool is activated 
 typedef struct _instruction {
-	void (*work)(distribution dist, int id, dist_ret* retval, void* f, void* p, void* args);	// Work to be executed on each thread
-	distribution dist;
+	int m, n;
+	par_array* input;
+	void* output;
+	void (*work)(int i, par_array* input, void* output, void* f, void* p, void* args);	// Work to be executed on each thread
 	void* f;				// Optional function
 	void* p;				// Optional predicate
 	void* args;
@@ -20,14 +24,15 @@ typedef struct _instruction {
 typedef struct _threadinfo {
 	int 		id;
 	pthread_t 	thread;
-	instruction 	instr;
-	dist_ret*	retval;
+	int		m, n;
 } threadinfo;
 
 threadinfo thrds[NUM_THREADS];
 
 int num_blocked = 	0;	// Amount of blocked threads (for barriers)
 char kill_threads = 	0;	// Condition for destroying all active worker threads
+
+instruction current_instr;
 
 pthread_cond_t barrier_cond;
 pthread_mutex_t barrier_mutex;
@@ -51,26 +56,27 @@ void barrier() {
 void worker(void* args) {
 	int 		id;
 	instruction* 	instr;
-	dist_ret*	retval;
+	threadinfo*	info;
 
 	id = (int)args;
 
-	instr = &(thrds[id].instr);
-	retval = thrds[id].retval;
+	instr = &current_instr;
+	info = 	thrds + id;
 
 	for(;;) {
 		barrier();
 		if(kill_threads == 1)
 			break;
 
-		retval->n = 0;
-		retval->v = NULL;
-		instr->work(instr->dist, id, retval, instr->f, instr->p, instr->args);
+
+		for(int i = info->m; i < info->n + 1; i++) {
+			instr->work(i, instr->input, instr->output, instr->f, instr->p, instr->args);
+		}
 		barrier();
 	}
-	free(retval);
 	pthread_exit(NULL);
 }
+
 
 void init_thread(int id, threadinfo* out_info) {
 	int s;
@@ -82,7 +88,6 @@ void init_thread(int id, threadinfo* out_info) {
 	}
 
 	out_info->id = id;
-	out_info->retval = (dist_ret*)calloc(1, sizeof(dist_ret));
 }
 
 void init_threadpool() {
@@ -102,24 +107,45 @@ void kill_threadpool() {
 		pthread_join(thrds[i].thread, NULL);
 }
 
-dist_ret** execute_in_parallel(void (*work)(distribution dist, int id, dist_ret* retval, void* f, void* p), distribution dist, void* f, void* p, void* args) {
-	dist_ret** ret = (dist_ret**)calloc(NUM_THREADS, sizeof(dist_ret*));
-	int s = 0;
+void execute_in_parallel(void (*work)(int i, par_array* input, void* output, void* f, void* p, void* args), const par_array* input, void* output, int m, int n, void* f, void* p, void* args) {
+	int len = n - m + 1;
+	int blocksize = len / NUM_THREADS;
+	int remainder = len % NUM_THREADS;
 
+	int thrd_block;
+	int acc = m;
+
+
+	current_instr.m = acc;
+	current_instr.n = acc + thrd_block - 1;
+	current_instr.input = input;
+	current_instr.output = output;
+	current_instr.work = work;
+	current_instr.f = f;
+	current_instr.p = p;
+	current_instr.args = args;
 	for(int i = 0; i < NUM_THREADS; i++) {
+		thrd_block = blocksize;
+		if(i < remainder)
+			thrd_block += 1;
+
+		thrds[i].m = acc;
+		thrds[i].n = acc + thrd_block - 1;
+		// ouch
+		/*thrds[i].instr.m = acc;
+		thrds[i].instr.n = acc + thrd_block - 1;
+		thrds[i].instr.input = input;
+		thrds[i].instr.output = output;
 		thrds[i].instr.work = work;
 		thrds[i].instr.f = f;
 		thrds[i].instr.p = p;
-		thrds[i].instr.dist = dist;
-		thrds[i].instr.args = args;
+		thrds[i].instr.args = args;*/
+
+		acc += thrd_block;
 	}
 
-	// Barrier. Wait for all active workers to finish
-	barrier();
-	for(int i = 0; i < NUM_THREADS; i++) {
-		ret[i] = thrds[i].retval;
-	}
-	barrier();
-
-	return ret;
+	barrier();	// Wait until threads are ready to start executing instructions...
+	// Threads do a bunch
+	// of work here
+	barrier();	// Sync threads, wait for them to finish...
 }

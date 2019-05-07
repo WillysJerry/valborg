@@ -153,8 +153,9 @@ double seq_reduce(double (*f)(double x, double y), const par_array a, int (*p)(i
 		}
 	}
 	for(; i < length(a); i++) {
-		if(p == NULL || p(local_to_global(a, i)))
+		if(p == NULL || p(local_to_global(a, i))) {
 			res = f(res, a.a[i]);	
+		}
 	}
 
 	return res;

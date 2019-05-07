@@ -29,6 +29,13 @@ int local_to_global(const par_array a, int i) {
 	return a.m + i;
 }
 
+void par_array_set(const par_array a, int gi, double v) {
+	a.a[global_to_local(a, gi)] = v;
+}
+double par_array_get(const par_array a, int gi) {
+	return a.a[global_to_local(a, gi)];
+}
+
 bounds intersection(const par_array* arrs, int n) {
 	bounds b;
 	

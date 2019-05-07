@@ -25,6 +25,9 @@ int length(const par_array a);
 int global_to_local(const par_array a, int i);
 int local_to_global(const par_array a, int i);
 
+void par_array_set(const par_array a, int gi, double v);
+double par_array_get(const par_array a, int gi);
+
 // Returns the set of intersecting indices between arrays 1..n
 bounds intersection(const par_array* arrs, int n);
 

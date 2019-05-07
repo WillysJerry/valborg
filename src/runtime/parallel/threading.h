@@ -31,7 +31,7 @@ int local_to_global_block(const distribution a, int block_id, int i);
 void init_threadpool();
 void kill_threadpool();
 
-dist_ret** execute_in_parallel(void (*work)(distribution dist, int id, dist_ret* retval, void* f, void* p, void* args), distribution dist, void* f, void* p, void* args);
+void execute_in_parallel(void (*work)(int i, par_array* input, void* output, void* f, void* p, void* args), const par_array* input, void* output, int m, int n_elements, void* f, void* p, void* args);
 
 void merge_result(dist_ret** ret, par_array* result);
 
