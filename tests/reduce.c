@@ -14,7 +14,7 @@
 #define T2 3444
 #define T3 63595 
 #define T4 800000
-#define N_TESTS 100
+#define N_TESTS 1000
 #define MAX 1000
 
 double sum2(double x, double y) {

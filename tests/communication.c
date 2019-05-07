@@ -1,13 +1,22 @@
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <math.h>
 #include <assert.h>
+#include <time.h>
 
 #include "../src/runtime/sequential.h"
 #include "../src/runtime/parallel.h"
 #include "../src/runtime/runtime.h"
+#include "benchmark.h"
 
-#define SIZE 10000
+#define EPSILON 0.0001
+#define T1 804200
+#define T2 62441 
+#define T3 63595 
+#define T4 800000
+#define N_TESTS 1000
+#define MAX 10
 
 int even(int i) {
 	return i % 2 == 0;
@@ -17,39 +26,54 @@ int dst(int i) {
 	return i;
 }
 
-int src(int i) {
-	return (i * 3 - 1) % SIZE;
+int src1(int i) {
+	return (i * 3 - 1) % T1;
 }
 
 int main(int argc, char** argv) {
-	par_array R; 	// Resulting array
+	double t0, t1;
+	double seq_t, par_t;
 
-	double arr1[SIZE];
-	double arr2[SIZE];
+	par_array R1, R2; 	// Resulting array
 
-	for(int i = 0; i < SIZE; i++) {
-		arr1[i] = i;
-		arr2[i] = 0.0;
+	double arr1[T1];
+
+	init_par_env();
+
+	for(int i = 0; i < T1; i++) {
+		arr1[i] = (double)rand()/(double)(RAND_MAX / MAX);
 	}
 
-	const par_array A = mk_array(arr1, 0, SIZE-1);
+	const par_array A = mk_array(arr1, 0, T1-1);
 
-	par_array B = seq_get(A, dst, NULL);
-	for(int i = 0; i < SIZE; i++) {
-		assert(B.a[i] == A.a[i]);
+	printf("#### TEST 1 ####\n");
+	seq_t = 0.0;
+	par_t = 0.0;
+	for(int i = 0; i < N_TESTS; i++) {
+		t0 = get_time_usec();
+		R1 = par_get(A, dst, NULL);
+		t1 = get_time_usec();
+		par_t += get_timediff(t0, t1);
+
+		t0 = get_time_usec();
+		R2 = seq_get(A, dst, NULL);
+		t1 = get_time_usec();
+		seq_t += get_timediff(t0, t1);
+
+		for(int i = 0; i < T1; i++) {
+			//printf("%.1f, %.1f, \n", VAL(A.a[i]), VAL(R1.a[i]));
+			assert(abs(VAL(R1.a[i]) - VAL(A.a[i])) <= EPSILON);
+			assert(abs(VAL(R2.a[i]) - VAL(A.a[i])) <= EPSILON);
+		}
+
+		free(R1.a);
+		free(R2.a);
 	}
+	seq_t /= N_TESTS;
+	par_t /= N_TESTS;
 
-	par_array C = mk_array(arr2, 0, SIZE-1);
-
-	seq_send(C, src, A, even);
-
-	for(int i = 0; i < SIZE; i++) {
-		if(i % 2 == 0)
-			assert(C.a[i] == A.a[src(i)]);
-		else
-			assert(C.a[i] == 0.0);
-	}
+	log_benchmark(seq_t, par_t, T1, "get");
 		
-
+	destroy_par_env();
 	return 0;
 }

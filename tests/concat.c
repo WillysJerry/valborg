@@ -10,11 +10,11 @@
 #include "benchmark.h"
 
 #define EPSILON 0.0001
-#define T1 10420
-#define T2 62441 
+#define T1 304200
+#define T2 624410 
 #define T3 63595 
 #define T4 800000
-#define N_TESTS 100
+#define N_TESTS 1000
 #define MAX 10
 
 
@@ -55,21 +55,24 @@ int main(int argc, char** argv) {
 
 		/*
 		for(k = 0; k < length(A); k++) {
-			printf("A: %.1f, %.1f, %.1f\n", A.a[k], R1.a[k], R2.a[k]);
+			printf("A: %.1f, %.1f, %.1f\n", VAL(A.a[k]), VAL(R1.a[k]), VAL(R2.a[k]));
 		}
 		for(k += 1; k < length(A) + length(B); k++) {
-			printf("B: %.1f, %.1f, %.1f\n", B.a[k - length(A)], R1.a[k], R2.a[k]);
+			printf("B: %.1f, %.1f, %.1f\n", VAL(B.a[k - length(A)]), VAL(R1.a[k]), VAL(R2.a[k]));
 
 		}*/
 
 		for(k = 0; k < length(A); k++) {
-			assert(fabs(R1.a[k] - A.a[k]) <= EPSILON);
-			assert(fabs(R1.a[k] - R2.a[k]) <= EPSILON);
+			assert(fabs(VAL(R1.a[k]) - VAL(A.a[k])) <= EPSILON);
+			assert(fabs(VAL(R1.a[k]) - VAL(R2.a[k])) <= EPSILON);
 		}
 		for(k += 1; k < length(A) + length(B); k++) {
-			assert(fabs(R1.a[k] - B.a[k - length(A)]) <= EPSILON);
-			assert(fabs(R1.a[k] - R2.a[k]) <= EPSILON);
+			assert(fabs(VAL(R1.a[k]) - VAL(B.a[k - length(A)])) <= EPSILON);
+			assert(fabs(VAL(R1.a[k]) - VAL(R2.a[k])) <= EPSILON);
 		}
+
+		free(R1.a);
+		free(R2.a);
 	}
 	seq_t /= N_TESTS;
 	par_t /= N_TESTS;

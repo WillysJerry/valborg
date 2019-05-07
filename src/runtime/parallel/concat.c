@@ -9,8 +9,8 @@ void concat_thrd(distribution dist, int id, par_array* out, void* f, void* p, vo
 
 	const par_array* A = dist.arrs + 0;
 	const par_array* B = dist.arrs + 1;
-	double* A_values = A->a + dist.blocks[id];
-	double* B_values = B->a + dist.blocks[id];
+	maybe* A_values = A->a + dist.blocks[id];
+	maybe* B_values = B->a + dist.blocks[id];
 	int base = dist.blocks[id];
 
 	int A_len = length(*A);
@@ -21,9 +21,6 @@ void concat_thrd(distribution dist, int id, par_array* out, void* f, void* p, vo
 		} else {
 			out->a[i] = B_values[i - base - A_len];	
 		}
-	}
-	for(int j = 0; j < size; j++) {
-
 	}
 }
 

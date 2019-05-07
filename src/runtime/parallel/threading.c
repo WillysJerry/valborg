@@ -115,7 +115,7 @@ void print_distribution(distribution dist) {
 		for(int j = 0; j < NUM_THREADS; j++) {
 			printf("| ");
 			for(int k = 0; k < dist.b_size[j]; k++) {
-				printf("%.2f ", dist.arrs[i].a[indx]);
+				printf("%.2f ", VAL(dist.arrs[i].a[indx]));
 				indx++;
 			}
 		}

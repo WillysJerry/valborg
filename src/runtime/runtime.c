@@ -6,13 +6,30 @@
 // Create a parallel array of floats
 par_array mk_array(const double* a, int m, int n) {
 	int len = n - m + 1;
-	double* v = (double*)calloc(len, sizeof(double));
+	//double* v = (double*)calloc(len, sizeof(double));
+	maybe* v = (maybe*)calloc(len, sizeof(maybe));
 
-	if(a != NULL)
-		memcpy(v, a, len * sizeof(double));
+	if(a != NULL) {
+		for(int i = 0; i < len; i++) {
+			v[i] = SOME(a[i]);
+		}
+		//memcpy(v, a, len * sizeof(double));
+	}
 
 	par_array arr = { m, n, v};
 	return arr;
+}
+
+par_array clone_array(const par_array a, int m, int n) {
+	int len = n - m + 1;
+	par_array arr = mk_array(NULL, m, n);
+
+	for(int i = m; i < n + len; i++) {
+		arr.a[G2L(arr, i)] = a.a[G2L(a, i)];
+	}
+
+	return arr;
+
 }
 
 // Returns the length of a
