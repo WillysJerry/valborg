@@ -68,13 +68,17 @@ par_array seq_concat(const par_array a, const par_array b) {
 	return c;
 }
 
-par_array seq_select(const par_array a, int m, int n) {
-	//par_array b = clone_array(a.a + G2L(a, m), m, n);
-	
+par_array seq_select(const par_array a, int m, int n, int (*p)(int i, double x)) {
+	par_array res = mk_array(NULL, m, n);
 
-	//return b;
-	
-	return clone_array(a, m, n);
+	for(int i = m; i < n + 1; i++) {
+		if(SATISFIES(p, i, VAL( a.a[G2L(a, i)] ))) {
+			res.a[G2L(res, i)] = a.a[G2L(a, i)];
+		} else {
+			res.a[G2L(res, i)] = NONE;
+		}
+	}
+	return res;
 }
 
 par_array seq_map1(double (*f)(double x), const par_array a, int (*p)(int i, double x)) {
@@ -211,5 +215,16 @@ par_array seq_scan(double (*f)(double x, double y), const par_array a, int (*p)(
 	}
 
 	return arr;
+}
+
+int seq_count(const par_array a, int (*p)(int i, double x)) {
+	int c = 0;
+	for(int i = 0; i < length(a); i++) {
+		if(IS_SOME(a.a[i]) && SATISFIES(p, i, VAL(a.a[i]))) {
+			c += 1;
+		}
+	}
+
+	return c;
 }
 

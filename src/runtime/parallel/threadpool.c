@@ -105,8 +105,10 @@ void kill_threadpool() {
 }
 
 par_array execute_in_parallel(void (*work)(distribution dist, int id, par_array* out, void* f, void* p, void* args), distribution dist, int out_m, int out_n, void* f, void* p, void* args) {
+	par_array ret;
 
-	par_array ret = mk_array(NULL, out_m, out_n);
+	if(out_m <= out_n)
+		ret = mk_array(NULL, out_m, out_n);
 
 	global_instruction.work = work;
 	global_instruction.f 	= f;
