@@ -207,11 +207,9 @@ par_array seq_scan(double (*f)(double x, double y), const par_array a, int (*p)(
 	for(; i < length(a); i++) {
 		if(IS_SOME(a.a[i]) &&
 		    SATISFIES(p, L2G(a, i), VAL(a.a[i]))) {
-
 			acc = f(acc, VAL(a.a[i]));
-		} else {
-			arr.a[i] = SOME(acc);
 		}
+		arr.a[i] = SOME(acc);
 	}
 
 	return arr;

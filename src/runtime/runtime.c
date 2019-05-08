@@ -21,10 +21,10 @@ par_array mk_array(const double* a, int m, int n) {
 }
 
 par_array clone_array(const par_array a, int m, int n) {
-	int len = n - m + 1;
+	//int len = n - m + 1;
 	par_array arr = mk_array(NULL, m, n);
 
-	for(int i = m; i < n + len; i++) {
+	for(int i = m; i < n + 1; i++) {
 		arr.a[G2L(arr, i)] = a.a[G2L(a, i)];
 	}
 

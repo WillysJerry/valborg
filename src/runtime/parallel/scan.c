@@ -6,82 +6,94 @@
 
 #include <math.h>
 // Masks out elements based on input predicate from the array before performing the scan
-void scan_msk_thrd(distribution dist, int id, dist_ret* retval, void* f, void* p, void* args) { 
+void scan_msk_thrd(distribution dist, int id, par_array* out, void* f, void* p, void* args) { 
 	int size = dist.b_size[id];
-	double* arr = (double*)calloc(dist.b_size[id], sizeof(double));
 
 	// Just assume that these arrays were passed...
-	double* A = dist.arrs[0] + dist.blocks[id];
+	par_array* A = dist.arrs;
+	maybe* A_values = A->a;
 
 	// Cast void pointers to functions, this is not very readable
-	int (*pred)(int i) =
-		(int (*)(int)) p;
+	int (*pred)(int i, double x) =
+		(int (*)(int, double)) p;
 
-	for(int i = 0; i < size; i++) {
-		if(pred == NULL || pred(local_to_global_block(dist, id, i))) {
-			arr[i] = A[i];
+	int base = A->m + dist.blocks[id];
+
+	for(int i = base; i < base + size; i++) {
+		if(SATISFIES(pred, i, VAL(A_values[ G2L(*A, i) ]))) {
+			out->a[ G2L(*out, i) ] = A_values[ G2L(*A, i) ];	
 		} else {
-			arr[i] = 0.0;	// Zero masked elements, maybe something else should happen? 
+			out->a[ G2L(*out, i) ] = NONE;
 		}
 	}
-
-	retval->v = arr;
-	retval->n = size;
 }
 
-void scan_thrd(distribution dist, int id, dist_ret* retval, void* f, void* p, void* args) {
+void scan_thrd(distribution dist, int id, par_array* out, void* f, void* p, void* args) {
 	int size = dist.b_size[id];
-	double* arr = (double*)calloc(dist.b_size[id], sizeof(double));
 
-	// Just assume that these arrays were passed...
-	double* A = dist.arrs[0] + dist.blocks[id];
+	par_array* A = dist.arrs;
+	maybe* A_values = A->a;
 
-	// Cast void pointers to functions, this is not very readable
 	double (*func)(double x, double y) =
 		(double (*)(double x, double y)) f;
 
-	int* lvl = (int*)args;
-	int k = 0x1 << *lvl;		// 2^j 
+	int lvl = (int)args;
 
-	int glob = local_to_global_block(dist, id, 0);
-	for(int i = 0; i < size; i++) {
-		if(glob + i >= k)
-			arr[i] = func(A[i - k], A[i]);
+	int base = A->m + dist.blocks[id];
+
+	maybe x, y;
+	maybe res;
+	int k = 0x1 << lvl;		// 2^j 
+
+	for(int i = base; i < base + size; i++) {
+		if(i >= A->m + k) {
+			x = A_values[ G2L(*A, i - k) ];
+			y = A_values[ G2L(*A, i) ];
+
+			if(IS_SOME(x) && IS_SOME(y)) {
+				res = SOME( func( VAL(x), VAL(y) ) );
+			} else if(IS_NONE(x) && IS_SOME(y)) {
+				res = y;
+			} else if(IS_SOME(x) && IS_NONE(y)) {
+				res = x;
+			} else {
+				// Both x and y are NONE
+				res = NONE;
+			}
+
+			out->a[ G2L(*out, i) ] = res;
+		}
 		else
-			arr[i] = A[i];
+			out->a[ G2L(*out, i) ] = A_values[ G2L(*A, i) ];
 	}
-
-	retval->v = arr;
-	retval->n = size;
 }
 
-par_array par_scan(double (*f)(double x, double y), const par_array a, int (*p)(int i)) {
+par_array par_scan(double (*f)(double x, double y), const par_array a, int (*p)(int i, double x)) {
 	distribution dist;
-
-	dist_ret** ret = NULL;
-	par_array res_array;
+	par_array work_arrays[2];
+	int in = 0, out = 0;
 
 
 	if(p != NULL) {
-		dist = distribute(&a, 1);
-		ret = execute_in_parallel(scan_msk_thrd, dist, NULL, (void*)p, NULL);
-		merge_result(ret, &res_array);
-		free(ret);
+		dist = distribute(&a, 1, DISTRIBUTION_STRICT);
+		work_arrays[0] = execute_in_parallel(scan_msk_thrd, dist, a.m, a.n, NULL, (void*)p, NULL);
 		free_distribution(dist);
 	} else {
-		res_array = a;
+		work_arrays[0] = clone_array(a, a.m, a.n);
 	}
 
-	for(int i = 0; i < ceil(log2(length(a))); i++) {
-		dist = distribute(&res_array, 1);
+	for(int i = 0; i < ceil(log2(length(a))) + 0; i++) {
+		in = i % 2;
+		out = (i + 1) % 2;
+		dist = distribute(work_arrays + in, 1, DISTRIBUTION_STRICT);
 
 		// TODO: Need to shrink the area that gets operated on in parallel at every
 		// iteration so that we don't need to go through the entire array every time.
-		ret = execute_in_parallel(scan_thrd, dist, (void*)f, NULL, (void*)&i);
-		merge_result(ret, &res_array);
-		free(ret);
+		work_arrays[out] = execute_in_parallel(scan_thrd, dist, a.m, a.n, (void*)f, NULL, (void*)(i));
+
+		free(work_arrays[in].a);
 		free_distribution(dist);
 	}
 
-	return res_array;
+	return work_arrays[out];
 }
