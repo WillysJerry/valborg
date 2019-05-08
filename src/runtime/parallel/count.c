@@ -25,12 +25,12 @@ void count_thrd(distribution dist, int id, par_array* out, void* f, void* p, voi
 
 int par_count(const par_array a, int (*p)(int i, double x)) {
 	distribution dist;
-	par_array res_array;
+	par_array res_array = mk_array(NULL, 0, NUM_THREADS-1);
 	int result;
 
 	dist = distribute(&a, 1, DISTRIBUTION_STRICT);
 
-	res_array = execute_in_parallel(count_thrd, dist, 0, NUM_THREADS-1, NULL, p, NULL);
+	execute_in_parallel(count_thrd, dist, &res_array, NULL, p, NULL);
 	free_distribution(dist);
 
 	// Need to round to integer to account for float (double) imprecision

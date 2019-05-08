@@ -5,8 +5,22 @@
 #include <pthread.h>
 #include <stdio.h>
 
+#include "fast_barrier.h"
+
 #include "../runtime.h"
 #include "../parallel.h"
+
+#define FAST_BARRIER_INIT()	fast_barrier_init(&fast_b, NULL, NUM_THREADS + 1)
+#define FAST_BARRIER_WAIT()	fast_barrier_wait(&fast_b)
+#define FAST_BARRIER_DEST()	fast_barrier_destroy(&fast_b)
+
+#define PTHREAD_BARRIER_INIT()		{ pthread_mutex_init(&barrier_mutex, NULL); pthread_cond_init(&barrier_cond, NULL); }
+#define PTHREAD_BARRIER_WAIT()		barrier()
+#define PTHREAD_BARRIER_DEST()
+
+#define INIT_BARRIER() 		PTHREAD_BARRIER_INIT()	
+#define BARRIER() 		PTHREAD_BARRIER_WAIT()
+#define DESTROY_BARRIER() 	PTHREAD_BARRIER_DEST()
 
 // Instructions to be used each time a thread in the threadpool is activated 
 typedef struct _instruction {
@@ -32,6 +46,8 @@ char kill_threads = 	0;	// Condition for destroying all active worker threads
 
 pthread_cond_t barrier_cond;
 pthread_mutex_t barrier_mutex;
+
+fast_barrier_t fast_b;
 
 instruction global_instruction;
 
@@ -59,7 +75,8 @@ void* worker(void* args) {
 	id = (int)args;
 
 	for(;;) {
-		barrier();
+		//barrier();
+		BARRIER();
 		if(kill_threads == 1)
 			break;
 
@@ -67,7 +84,8 @@ void* worker(void* args) {
 		instr = global_instruction;
 
 		instr.work(instr.dist, id, instr.output, instr.f, instr.p, instr.args);
-		barrier();
+		//barrier();
+		BARRIER();
 	}
 	pthread_exit(NULL);
 	return NULL;
@@ -91,6 +109,8 @@ void init_threadpool() {
 	pthread_mutex_init(&barrier_mutex, NULL);
 	pthread_cond_init(&barrier_cond, NULL);
 
+	INIT_BARRIER();
+
 	for(int i = 0; i < NUM_THREADS; i++) {
 		init_thread(i, thrds + i);
 	}
@@ -98,30 +118,38 @@ void init_threadpool() {
 
 void kill_threadpool() {
 	kill_threads = 1;
-	barrier();
+	//barrier();
+	BARRIER();
 
 	for(int i = 0; i < NUM_THREADS; i++)
 		pthread_join(thrds[i].thread, NULL);
+
+	DESTROY_BARRIER();
 }
 
-par_array execute_in_parallel(void (*work)(distribution dist, int id, par_array* out, void* f, void* p, void* args), distribution dist, int out_m, int out_n, void* f, void* p, void* args) {
-	par_array ret;
+void execute_in_parallel(void (*work)(distribution dist, int id, par_array* out, void* f, void* p, void* args), distribution dist, par_array* out, void* f, void* p, void* args) {
+	/*par_array ret;
 
-	if(out_m <= out_n)
+	if(out_m <= out_n) {
 		ret = mk_array(NULL, out_m, out_n);
+	}
+	*/
 
 	global_instruction.work = work;
 	global_instruction.f 	= f;
 	global_instruction.p	= p;
 	global_instruction.args = args;
 	global_instruction.dist = dist;
-	global_instruction.output = &ret;
+	//global_instruction.output = &ret;
+	global_instruction.output = out;
 
 	// Barrier. Wait for all active workers to finish
-	barrier();
+	//barrier();
+	BARRIER();
 	// Worker threads perform their
 	// work here
-	barrier();
+	//barrier();
+	BARRIER();
 
-	return ret;
+	//return ret;
 }

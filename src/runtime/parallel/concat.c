@@ -26,14 +26,14 @@ void concat_thrd(distribution dist, int id, par_array* out, void* f, void* p, vo
 
 par_array par_concat(const par_array a, const par_array b) {
 	distribution dist;
-	par_array res_array;
 
 	int res_size = length(a) + length(b);
 
 	par_array arrs[] = {a, b};
 	dist = distribute(arrs, 2, DISTRIBUTION_SUM);
+	par_array res_array = mk_array(NULL, a.m, a.m + res_size - 1);
 
-	res_array = execute_in_parallel(concat_thrd, dist, a.m, a.m + res_size - 1, NULL, NULL, NULL);
+	execute_in_parallel(concat_thrd, dist, &res_array, NULL, NULL, NULL);
 	free_distribution(dist);
 
 	return res_array;

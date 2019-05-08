@@ -34,6 +34,6 @@ void par_send(par_array a, int (*f)(int i), const par_array b, int (*p)(int i, d
 
 	dist = distribute(&b, 1, DISTRIBUTION_STRICT);
 
-	execute_in_parallel(send_thrd, dist, 0, -1, f, p, &a);
+	execute_in_parallel(send_thrd, dist, NULL, f, p, &a);
 	free_distribution(dist);
 }

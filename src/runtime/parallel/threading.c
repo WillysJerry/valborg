@@ -8,6 +8,31 @@
 #include "../runtime.h"
 #include "../parallel.h"
 
+void set_dist_size(distribution* dist, int m, int n) {
+	int len = n - m + 1;			// Total length of the array segment
+	dist->size = len;
+	dist->m = m;
+	dist->n = n;
+
+	int block_size 	= len / NUM_THREADS;	// The minimum block size 
+	int remainder 	= len % NUM_THREADS;
+
+	// Set block sizes for the remaining threads
+	int cur_size;		// Size of the current block when iterating
+	int acc = 0;		// Accumulator to figure out the starting indices of the blocks
+
+	for(int i = 0; i < NUM_THREADS; i++) {
+		cur_size = block_size;
+		if(i < remainder)
+			cur_size += 1;
+
+		dist->blocks[i] = acc;
+		dist->b_size[i] = cur_size;
+		acc += cur_size;
+	}
+
+}
+
 distribution distribute(const par_array* arr, int n, unsigned char mode) {
 	int 	i,
 		a_m, 		// The "m" of the distribution, the lowest intersecting index of all input arrays

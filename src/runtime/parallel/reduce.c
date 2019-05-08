@@ -54,11 +54,11 @@ double par_reduce(double (*f)(double x, double y), const par_array a, int (*p)(i
 	distribution dist;
 	double result = 0.0;
 
-	par_array res_array;
+	par_array res_array = mk_array(NULL, a.m, NUM_THREADS - 1);
 
 	dist = distribute(&a, 1, DISTRIBUTION_STRICT);
 
-	res_array = execute_in_parallel(reduce_thrd, dist, 0, NUM_THREADS-1, (void*)f, (void*)p, NULL);
+	execute_in_parallel(reduce_thrd, dist, &res_array, (void*)f, (void*)p, NULL);
 
 	result = VAL(res_array.a[0]);
 	for(int i = 1; i < NUM_THREADS; i++) {

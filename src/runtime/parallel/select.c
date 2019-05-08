@@ -25,11 +25,11 @@ void select_thrd(distribution dist, int id, par_array* out, void* f, void* p, vo
 
 par_array par_select(const par_array a, int m, int n, int (*p)(int i, double x)) {
 	distribution dist;
-	par_array res_array;
+	par_array res_array = mk_array(NULL, m, n);
 
 	dist = distribute(&a, 1, DISTRIBUTION_STRICT);
 
-	res_array = execute_in_parallel(select_thrd, dist, m, n, NULL, p, NULL);
+	execute_in_parallel(select_thrd, dist, &res_array, NULL, p, NULL);
 	free_distribution(dist);
 
 

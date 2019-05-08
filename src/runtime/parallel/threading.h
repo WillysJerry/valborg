@@ -4,7 +4,7 @@
 #include "../parallel.h"
 #include "../runtime.h"
 
-#define NUM_THREADS 4
+#define NUM_THREADS 4 
 
 #define DISTRIBUTION_STRICT 		0	// All input arrays must have the same m..n
 #define DISTRIBUTION_INTERSECTION	1	// The distribution will cover the intersecting indices of the arrays
@@ -22,6 +22,7 @@ typedef struct _distribution {
 } distribution;
 
 distribution distribute(const par_array* arr, int n, unsigned char mode);
+void set_dist_size(distribution* dist, int m, int n);
 void free_distribution(distribution dist);
 void print_distribution(distribution dist);
 
@@ -31,7 +32,8 @@ int local_to_global_block(const distribution a, int block_id, int i);
 void init_threadpool();
 void kill_threadpool();
 
-par_array execute_in_parallel(void (*work)(distribution dist, int id, par_array* out, void* f, void* p, void* args), distribution dist, int out_m, int out_n, void* f, void* p, void* args);
+//par_array execute_in_parallel(void (*work)(distribution dist, int id, par_array* out, void* f, void* p, void* args), distribution dist, int out_m, int out_n, void* f, void* p, void* args);
+void execute_in_parallel(void (*work)(distribution dist, int id, par_array* out, void* f, void* p, void* args), distribution dist, par_array* out, void* f, void* p, void* args);
 
 void barrier();
 

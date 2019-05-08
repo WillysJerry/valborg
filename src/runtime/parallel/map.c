@@ -118,43 +118,42 @@ void map3_thrd(distribution dist, int id, par_array* out, void* f, void* p, void
  * Global-view map functions
  */
 par_array par_map1(double (*f)(double x), const par_array a, int (*p)(int i, double x)) {
-	par_array result;
 
 	par_array arrs[] = { a };
 	distribution dist = distribute(arrs, 1, DISTRIBUTION_INTERSECTION);
+	par_array result = mk_array(NULL, dist.m, dist.n);
 
 
 	// Start parallel execution
-	par_array ret = execute_in_parallel(map_thrd, dist, dist.m, dist.n, (void*)f, (void*)p, NULL);
+	execute_in_parallel(map_thrd, dist, &result, (void*)f, (void*)p, NULL);
 
-	return ret;
+	return result;
 
 }
 
 par_array par_map2(double (*f)(double x, double y), const par_array a, const par_array b, int (*p)(int i, double x, double y)) {
-	par_array result;
-
 	par_array arrs[] = { a, b };
 	distribution dist = distribute(arrs, 2, DISTRIBUTION_INTERSECTION);
+	par_array result = mk_array(NULL, dist.m, dist.n);
 
 
 	// Start parallel execution
-	par_array ret = execute_in_parallel(map2_thrd, dist, dist.m, dist.n, (void*)f, (void*)p, NULL);
+	execute_in_parallel(map2_thrd, dist, &result, (void*)f, (void*)p, NULL);
 
-	return ret;
+	return result;
 
 }
 
 par_array par_map3(double (*f)(double x, double y, double z), const par_array a, const par_array b, const par_array c, int (*p)(int i, double x, double y, double z)) {
-	par_array result;
 
 	par_array arrs[] = { a, b, c };
 	distribution dist = distribute(arrs, 3, DISTRIBUTION_INTERSECTION);
+	par_array result = mk_array(NULL, dist.m, dist.n);
 
 
 	// Start parallel execution
-	par_array ret = execute_in_parallel(map3_thrd, dist, dist.m, dist.n, (void*)f, (void*)p, NULL);
+	execute_in_parallel(map3_thrd, dist, &result, (void*)f, (void*)p, NULL);
 
-	return ret;
+	return result;
 
 }
