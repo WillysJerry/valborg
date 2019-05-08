@@ -91,7 +91,6 @@ par_array par_scan(double (*f)(double x, double y), const par_array a, int (*p)(
 
 	set_dist_size(&dist, a.m, a.n);
 	for(int i = 0; i < ceil(log2(length(a))); i++) {
-		printf("%d: %d\n", i, dist.n - dist.m + 1);
 		in = i % 2;
 		out = (i + 1) % 2;
 		//dist = distribute(work_arrays + in, 1, DISTRIBUTION_STRICT);
