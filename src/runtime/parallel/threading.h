@@ -8,6 +8,7 @@
 
 #define DISTRIBUTION_STRICT 		0	// All input arrays must have the same m..n
 #define DISTRIBUTION_INTERSECTION	1	// The distribution will cover the intersecting indices of the arrays
+#define DISTRIBUTION_UNION		2
 #define DISTRIBUTION_SUM		3	// The distribution will cover the sum of the arrays index ranges 
 
 // As a starting point, data-parallel operations will only operate on the set of indices that intersect the input arrays. Perhaps we'd want to change this later, but how would we handle indices outside the range of one of the arrays?

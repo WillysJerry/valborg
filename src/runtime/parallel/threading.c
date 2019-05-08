@@ -47,6 +47,19 @@ distribution distribute(const par_array* arr, int n, unsigned char mode) {
 			return dist;
 		}
 	}
+	else if(mode == DISTRIBUTION_UNION) {
+		// Get lowest m and highest n 
+		a_m = arr[0].m;
+		a_n = arr[0].n;
+		for(i = 1; i < n; i++) {
+			if(arr[i].m < a_m)
+				a_m = arr[i].m;	
+			if(arr[i].n > a_n)
+				a_n = arr[i].n;
+		}
+		dist.m = a_m;
+		dist.n = a_n;
+	}
 	else if(mode == DISTRIBUTION_SUM) {
 		a_m = arr[0].m;
 		int size = arr[0].n - arr[0].m + 1;

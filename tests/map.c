@@ -17,6 +17,10 @@ double mul3(double x, double y, double z) {
 	return x*y*z;
 }
 
+int x_lt2(int i, double x, double y) {
+	return x < 2.0;
+}
+
 int main(int argc, char** argv) {
 	par_array R; 	// Resulting array
 	
@@ -33,21 +37,21 @@ int main(int argc, char** argv) {
 	R = par_map1(square, A, NULL);
 	printf("Square A:\n");
 	for(int i = 0; i < length(R); i++) {
-		printf("%f ", R.a[i]);
+		printf("%f ", VAL(R.a[i]));
 	}
 	free(R.a);
 
 	printf("\nSum A B:\n");
-	R = par_map2(sum2, A, B, NULL);
+	R = par_map2(sum2, A, B, x_lt2);
 	for(int i = 0; i < length(R); i++) {
-		printf("%f ", R.a[i]);
+		printf("%f ", VAL(R.a[i]));
 	}
 	free(R.a);
 
 	printf("\nMul A B C:\n");
 	R = par_map3(mul3, A, B, C, NULL);
 	for(int i = 0; i < length(R); i++) {
-		printf("%f ", R.a[i]);
+		printf("%f ", VAL(R.a[i]));
 	}
 	free(R.a);
 
