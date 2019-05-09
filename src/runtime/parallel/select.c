@@ -9,8 +9,8 @@
 void select_thrd(distribution dist, int id, par_array* out, void* f, void* p, void* args) {
 	int size = dist.b_size[id];
 
-	int (*pred)(int i, double x) =
-		(int (*)(int, double)) p;
+	int (*pred)(int i, const par_array x) =
+		(int (*)(int, const par_array)) p;
 
 	const par_array* A = dist.arrs;
 	maybe* A_values = dist.arrs[0].a;
@@ -18,12 +18,12 @@ void select_thrd(distribution dist, int id, par_array* out, void* f, void* p, vo
 
 
 	for(int i = arrbase; i < arrbase + size; i++) {
-		if(SATISFIES(pred, i, VAL(A_values[G2L(*A, i)])))
+		if(SATISFIES(pred, i, *A))
 			out->a[G2L(*out, i)] = A_values[G2L(*A, i)];
 	}
 }
 
-par_array par_select(const par_array a, int m, int n, int (*p)(int i, double x)) {
+par_array par_select(const par_array a, int m, int n, int (*p)(int i, const par_array x)) {
 	distribution dist;
 	par_array res_array = mk_array(NULL, m, n);
 

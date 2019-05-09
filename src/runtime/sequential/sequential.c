@@ -20,7 +20,7 @@
 //     v  v  v  v  v  v
 // B:  3  4  0  5  0  9
 // ------------------
-par_array seq_get(const par_array a, int (*f)(int i), int (*p)(int i, double x)) {
+par_array seq_get(const par_array a, int (*f)(int i), int (*p)(int i, const par_array x)) {
 	// TODO: A good idea might be to set the bounds (m..n) of the output array dynamically based on the mapping function,
 	// as this might allow for easy shifting of arrays by for instance mapping i->(i+1), which would mean that the output m
 	// should be m+1 and the out n should be n+1 (rather then keeping them the same as the in array). 
@@ -31,7 +31,7 @@ par_array seq_get(const par_array a, int (*f)(int i), int (*p)(int i, double x))
 
 	for(int i = a.m; i < a.n + 1; i++) {
 		src_i = G2L(a, f(i));
-		if(SATISFIES(p, i, VAL(a.a[src_i]))) {
+		if(SATISFIES(p, src_i, a)) {
 			memcpy(	b.a + G2L(b, i),
 				a.a + G2L(a, src_i),
 				sizeof(maybe));
@@ -44,14 +44,14 @@ par_array seq_get(const par_array a, int (*f)(int i), int (*p)(int i, double x))
 // This function has side-effects. Possible race condition if f(i) == f(j) for some i and j.
 // Another thing to consider is how the bounds of the two arrays should work together, maybe we only send the elements that are intersecting? For now this is ignored.
 // The source function maps GLOBAL SPACE indices.
-void seq_send(par_array a, int (*f)(int i), const par_array b, int (*p)(int i, double lhs, double rhs)) {
+void seq_send(par_array a, int (*f)(int i), const par_array b, int (*p)(int i, const par_array lhs, const par_array rhs)) {
 	int i;
 	int dst_i, src_i;
 
 	for(i = a.m; i < a.n + 1; i++) {
 		dst_i = G2L(a, f(i));
 		src_i = G2L(b, i);
-		if(SATISFIES(p, i, VAL(a.a[dst_i]), VAL(b.a[src_i]))) {
+		if(SATISFIES(p, i, a, b)) {
 			// Need to convert from global to local index space
 			a.a[dst_i] = b.a[src_i];
 		}
@@ -68,11 +68,11 @@ par_array seq_concat(const par_array a, const par_array b) {
 	return c;
 }
 
-par_array seq_select(const par_array a, int m, int n, int (*p)(int i, double x)) {
+par_array seq_select(const par_array a, int m, int n, int (*p)(int i, const par_array x)) {
 	par_array res = mk_array(NULL, m, n);
 
 	for(int i = m; i < n + 1; i++) {
-		if(SATISFIES(p, i, VAL( a.a[G2L(a, i)] ))) {
+		if(SATISFIES(p, i, a)) {
 			res.a[G2L(res, i)] = a.a[G2L(a, i)];
 		} else {
 			res.a[G2L(res, i)] = NONE;
@@ -81,7 +81,7 @@ par_array seq_select(const par_array a, int m, int n, int (*p)(int i, double x))
 	return res;
 }
 
-par_array seq_map1(double (*f)(double x), const par_array a, int (*p)(int i, double x)) {
+par_array seq_map1(double (*f)(double x), const par_array a, int (*p)(int i, const par_array x)) {
 	int i, j;
 	par_array arr = mk_array(NULL, a.m, a.n);
 
@@ -92,7 +92,7 @@ par_array seq_map1(double (*f)(double x), const par_array a, int (*p)(int i, dou
 	for(i = a.m, j = 0 ; i < a.n + 1; i++, j++) {
 		x = a.a[G2L(a, i)];
 		if(IS_SOME(x) && 
-		    SATISFIES(p, i, VAL(x))) {
+		    SATISFIES(p, i, a)) {
 
 			arr.a[j] = SOME( f(VAL(x)) );
 		} else {
@@ -104,7 +104,7 @@ par_array seq_map1(double (*f)(double x), const par_array a, int (*p)(int i, dou
 }
 
 // How to handle these (map2, map3)? Should arrays of different sizes be allowed? Also how will it work with index bounds?
-par_array seq_map2(double (*f)(double x, double y), const par_array a, const par_array b, int (*p)(int i, double x, double y)) {
+par_array seq_map2(double (*f)(double x, double y), const par_array a, const par_array b, int (*p)(int i, par_array x, par_array y)) {
 	int i, j;
 	const par_array arrs[] = {a, b};
 	bounds rng = intersection( arrs, 2 );
@@ -120,7 +120,7 @@ par_array seq_map2(double (*f)(double x, double y), const par_array a, const par
 		y = b.a[G2L(b, i)];
 		if(IS_SOME(x)  && 
 		    IS_SOME(y) &&
-		    SATISFIES(p, i, VAL(x), VAL(y))) {
+		    SATISFIES(p, i, a, b)) {
 
 			arr.a[j] = SOME(f(	VAL(x), 
 						VAL(y)));
@@ -132,7 +132,7 @@ par_array seq_map2(double (*f)(double x, double y), const par_array a, const par
 	return arr;
 }
 
-par_array seq_map3(double (*f)(double x, double y, double z), const par_array a, const par_array b, const par_array c, int (*p)(int i, double x, double y, double z)) {
+par_array seq_map3(double (*f)(double x, double y, double z), const par_array a, const par_array b, const par_array c, int (*p)(int i, const par_array x, const par_array y, const par_array z)) {
 	int i, j;
 	const par_array arrs[] = {a, b, c};
 	bounds rng = intersection( arrs, 3 );
@@ -150,7 +150,7 @@ par_array seq_map3(double (*f)(double x, double y, double z), const par_array a,
 		if(IS_SOME(x) && 
 		    IS_SOME(y) && 
 		    IS_SOME(z) &&
-		    SATISFIES(p, i, VAL(x), VAL(y), VAL(z))) {
+		    SATISFIES(p, i, a, b, c)) {
 
 			arr.a[j] = SOME(f(VAL(x), VAL(y), VAL(z))); 
 		} else {
@@ -162,12 +162,12 @@ par_array seq_map3(double (*f)(double x, double y, double z), const par_array a,
 }
 
 // Sequential reduce and scan are basically linear pairwise applications of the function f over the input array
-double seq_reduce(double (*f)(double x, double y), const par_array a, int (*p)(int i, double x)) {
+double seq_reduce(double (*f)(double x, double y), const par_array a, int (*p)(int i, const par_array x)) {
 	int i;
 	double res = 0.0;
 	for(i = 0; i < length(a); i++) {
 		if(IS_SOME(a.a[i]) && 
-		    SATISFIES(p, L2G(a, i), VAL(a.a[i]))) {
+		    SATISFIES(p, L2G(a, i), a)) {
 
 			res = VAL(a.a[i]);
 			i++;
@@ -176,7 +176,7 @@ double seq_reduce(double (*f)(double x, double y), const par_array a, int (*p)(i
 	}
 	for(; i < length(a); i++) {
 		if(IS_SOME(a.a[i]) && 
-		    SATISFIES(p, L2G(a, i), VAL(a.a[i]))) {
+		    SATISFIES(p, L2G(a, i), a)) {
 
 				res = f(res, VAL(a.a[i]));	
 		}
@@ -185,7 +185,7 @@ double seq_reduce(double (*f)(double x, double y), const par_array a, int (*p)(i
 	return res;
 }
 
-par_array seq_scan(double (*f)(double x, double y), const par_array a, int (*p)(int i, double x)) {
+par_array seq_scan(double (*f)(double x, double y), const par_array a, int (*p)(int i, const par_array x)) {
 	int i;
 	par_array arr = mk_array(NULL, a.m, a.n);
 	double acc = 0.0;
@@ -195,7 +195,7 @@ par_array seq_scan(double (*f)(double x, double y), const par_array a, int (*p)(
 	// Find starting index (to which we don't apply f)
 	for(i = 0; i < length(a); i++) {
 		if(IS_SOME(a.a[i]) &&
-		    SATISFIES(p, L2G(a, i), VAL(a.a[i]))) {
+		    SATISFIES(p, L2G(a, i), a)) {
 			acc = VAL(a.a[i]);
 			arr.a[i] = SOME(acc);
 			i++;
@@ -206,7 +206,7 @@ par_array seq_scan(double (*f)(double x, double y), const par_array a, int (*p)(
 	// Scan through the remaining indices of the array
 	for(; i < length(a); i++) {
 		if(IS_SOME(a.a[i]) &&
-		    SATISFIES(p, L2G(a, i), VAL(a.a[i]))) {
+		    SATISFIES(p, L2G(a, i), a)) {
 			acc = f(acc, VAL(a.a[i]));
 		}
 		arr.a[i] = SOME(acc);
@@ -215,10 +215,10 @@ par_array seq_scan(double (*f)(double x, double y), const par_array a, int (*p)(
 	return arr;
 }
 
-int seq_count(const par_array a, int (*p)(int i, double x)) {
+int seq_count(const par_array a, int (*p)(int i, const par_array x)) {
 	int c = 0;
 	for(int i = 0; i < length(a); i++) {
-		if(IS_SOME(a.a[i]) && SATISFIES(p, i, VAL(a.a[i]))) {
+		if(IS_SOME(a.a[i]) && SATISFIES(p, i, a)) {
 			c += 1;
 		}
 	}
@@ -226,14 +226,14 @@ int seq_count(const par_array a, int (*p)(int i, double x)) {
 	return c;
 }
 
-par_array seq_asn(const par_array a, const par_array b, int (*p)(int i, double lhs, double rhs)) {
+par_array seq_asn(const par_array a, const par_array b, int (*p)(int i, const par_array lhs, const par_array rhs)) {
 	if(a.m != b.m || a.n != b.n) {
 		return mk_array(NULL, 0, -1);
 	}
 	par_array res = mk_array(NULL, a.m, a.n);
 
 	for(int i = res.m; i < res.n + 1; i++) {
-		if(SATISFIES(p, i, VAL(a.a[G2L(a, i)]), VAL(b.a[G2L(b, i)]))) {
+		if(SATISFIES(p, i, a, b)) {
 			res.a[G2L(res, i)] = b.a[G2L(b, i)];
 		} else {
 			res.a[G2L(res, i)] = a.a[G2L(a, i)];

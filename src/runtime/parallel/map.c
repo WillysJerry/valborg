@@ -11,14 +11,14 @@ void map_thrd(distribution dist, int id, par_array* out, void* f, void* p, void*
 	int size = dist.b_size[id];
 
 	// Just assume that these arrays were passed...
-	par_array* A = dist.arrs;
+	const par_array* A = dist.arrs;
 	maybe* A_values = dist.arrs[0].a; // + dist.blocks[id];
 
 	// Cast void pointers to functions, this is not very readable
 	double (*func)(double x) =
 		(double (*)(double x)) f;
-	int (*pred)(int i, double x) =
-		(int (*)(int, double)) p;
+	int (*pred)(int i, par_array x) =
+		(int (*)(int, par_array)) p;
 
 	maybe x;
 	int glob;
@@ -26,7 +26,7 @@ void map_thrd(distribution dist, int id, par_array* out, void* f, void* p, void*
 	for(int i = dist.blocks[id]; i < dist.blocks[id] + size; i++) {
 		glob = L2G(*out, i);
 		x = A_values[G2L(*A, glob)]; 
-		if(IS_SOME(x) && SATISFIES(pred, i, VAL(x))) {
+		if(IS_SOME(x) && SATISFIES(pred, i, *A)) {
 			out->a[i] = SOME( func( VAL(x) ) );
 		}
 		else {
@@ -39,8 +39,8 @@ void map2_thrd(distribution dist, int id, par_array* out, void* f, void* p, void
 	int size = dist.b_size[id];
 
 	// Just assume that these arrays were passed...
-	par_array* A = dist.arrs;
-	par_array* B = dist.arrs + 1;
+	const par_array* A = dist.arrs;
+	const par_array* B = dist.arrs + 1;
 
 	maybe* A_values = A->a;
 	maybe* B_values = B->a;
@@ -48,8 +48,8 @@ void map2_thrd(distribution dist, int id, par_array* out, void* f, void* p, void
 	// Cast void pointers to functions, this is not very readable
 	double (*func)(double x, double y) =
 		(double (*)(double, double)) f;
-	int (*pred)(int i, double x, double y) =
-		(int (*)(int, double, double)) p;
+	int (*pred)(int i, par_array x, par_array y) =
+		(int (*)(int, par_array, par_array)) p;
 
 	maybe x;
 	maybe y;
@@ -63,7 +63,7 @@ void map2_thrd(distribution dist, int id, par_array* out, void* f, void* p, void
 
 		if(IS_SOME(x)  && 
 		    IS_SOME(y) && 
-		    SATISFIES(pred, i, VAL(x), VAL(y))) {
+		    SATISFIES(pred, i, *A, *B)) {
 
 			out->a[i] = SOME( func( VAL(x), VAL(y) ) );
 		}
@@ -77,9 +77,9 @@ void map3_thrd(distribution dist, int id, par_array* out, void* f, void* p, void
 	int size = dist.b_size[id];
 
 	// Just assume that these arrays were passed...
-	par_array* A = dist.arrs;
-	par_array* B = dist.arrs + 1;
-	par_array* C = dist.arrs + 2;
+	const par_array* A = dist.arrs;
+	const par_array* B = dist.arrs + 1;
+	const par_array* C = dist.arrs + 2;
 
 	maybe* A_values = A->a;
 	maybe* B_values = B->a;
@@ -88,8 +88,8 @@ void map3_thrd(distribution dist, int id, par_array* out, void* f, void* p, void
 	// Cast void pointers to functions, this is not very readable
 	double (*func)(double x, double y, double z) =
 		(double (*)(double, double, double)) f;
-	int (*pred)(int i, double x, double y, double z) =
-		(int (*)(int, double, double, double)) p;
+	int (*pred)(int i, par_array x, par_array y, par_array z) =
+		(int (*)(int, par_array, par_array, par_array)) p;
 
 	maybe x, y, z;
 	int glob;
@@ -104,7 +104,7 @@ void map3_thrd(distribution dist, int id, par_array* out, void* f, void* p, void
 		if(IS_SOME(x)  && 
 		    IS_SOME(y) && 
 		    IS_SOME(z) &&
-		    SATISFIES(pred, i, VAL(x), VAL(y), VAL(z))) {
+		    SATISFIES(pred, i, *A, *B, *C)) {
 
 			out->a[i] = SOME( func( VAL(x), VAL(y), VAL(z) ) );
 		}
@@ -117,7 +117,7 @@ void map3_thrd(distribution dist, int id, par_array* out, void* f, void* p, void
 /*
  * Global-view map functions
  */
-par_array par_map1(double (*f)(double x), const par_array a, int (*p)(int i, double x)) {
+par_array par_map1(double (*f)(double x), const par_array a, int (*p)(int i, par_array x)) {
 
 	par_array arrs[] = { a };
 	distribution dist = distribute(arrs, 1, DISTRIBUTION_INTERSECTION);
@@ -131,7 +131,7 @@ par_array par_map1(double (*f)(double x), const par_array a, int (*p)(int i, dou
 
 }
 
-par_array par_map2(double (*f)(double x, double y), const par_array a, const par_array b, int (*p)(int i, double x, double y)) {
+par_array par_map2(double (*f)(double x, double y), const par_array a, const par_array b, int (*p)(int i, par_array x, par_array y)) {
 	par_array arrs[] = { a, b };
 	distribution dist = distribute(arrs, 2, DISTRIBUTION_INTERSECTION);
 	par_array result = mk_array(NULL, dist.m, dist.n);
@@ -144,7 +144,7 @@ par_array par_map2(double (*f)(double x, double y), const par_array a, const par
 
 }
 
-par_array par_map3(double (*f)(double x, double y, double z), const par_array a, const par_array b, const par_array c, int (*p)(int i, double x, double y, double z)) {
+par_array par_map3(double (*f)(double x, double y, double z), const par_array a, const par_array b, const par_array c, int (*p)(int i, par_array x, par_array y, par_array z)) {
 
 	par_array arrs[] = { a, b, c };
 	distribution dist = distribute(arrs, 3, DISTRIBUTION_INTERSECTION);

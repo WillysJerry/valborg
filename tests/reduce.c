@@ -25,11 +25,11 @@ double mul2(double x, double y) {
 	return x*y;
 }
 
-int gt4(int i, double x) {
-	return x>4;
+int gt4(int i, const par_array x) {
+	return IS_SOME(ELEM(x, i)) && (VAL(ELEM(x, i)) > 4);
 }
-int gt100(int i, double x) {
-	return x>100;
+int gt100(int i, const par_array x) {
+	return IS_SOME(ELEM(x, i)) && (VAL(ELEM(x, i)) > 100);
 }
 
 

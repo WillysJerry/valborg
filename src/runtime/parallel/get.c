@@ -9,8 +9,8 @@ void get_thrd(distribution dist, int id, par_array* out, void* f, void* p, void*
 
 	int (*func)(int i) =
 		(int (*)(int i)) f;
-	int (*pred)(int i, double x) =
-		(int (*)(int, double)) p;
+	int (*pred)(int i, par_array x) =
+		(int (*)(int, par_array)) p;
 
 	const par_array* A = dist.arrs;
 	maybe* A_values = A->a;
@@ -22,14 +22,14 @@ void get_thrd(distribution dist, int id, par_array* out, void* f, void* p, void*
 		src_i = func( L2G(*A, i) );
 
 		// Check predicate here
-		if(SATISFIES(pred, src_i, VAL(A_values[ G2L(*A, src_i) ])))
+		if(SATISFIES(pred, src_i, *A))
 			out->a[i] = A_values[ G2L(*A, src_i) ];	
 		else
 			out->a[i] = NONE;
 	}
 }
 
-par_array par_get(const par_array a, int (*f)(int i), int (*p)(int i, double x)) {
+par_array par_get(const par_array a, int (*f)(int i), int (*p)(int i, par_array x)) {
 	distribution dist;
 	par_array res_array = mk_array(NULL, a.m, a.n);
 

@@ -9,21 +9,22 @@
 void count_thrd(distribution dist, int id, par_array* out, void* f, void* p, void* args) {
 	int size = dist.b_size[id];
 
-	int (*pred)(int i, double x) =
-		(int (*)(int, double)) p;
+	int (*pred)(int i, par_array x) =
+		(int (*)(int, par_array)) p;
 
-	maybe* A = dist.arrs[0].a + dist.blocks[id];
+	par_array* A = dist.arrs;
+	maybe* A_values = A->a + dist.blocks[id];
 	int arrbase = dist.m + dist.blocks[id];
 
 
 	out->a[id] = SOME(0);
 	for(int i = 0; i < size; i++) {
-		if(IS_SOME(A[i]) && SATISFIES(pred, arrbase + i, VAL(A[i])))
+		if(IS_SOME(A_values[i]) && SATISFIES(pred, arrbase + i, *A))
 			out->a[id] = SOME( VAL(out->a[id]) + 1);
 	}
 }
 
-int par_count(const par_array a, int (*p)(int i, double x)) {
+int par_count(const par_array a, int (*p)(int i, par_array x)) {
 	distribution dist;
 	par_array res_array = mk_array(NULL, 0, NUM_THREADS-1);
 	int result;

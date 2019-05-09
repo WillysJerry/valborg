@@ -30,12 +30,12 @@ double mul3(double x, double y, double z) {
 	return x*y*z;
 }
 
-int x_lt2(int i, double x, double y) {
-	return x < 2.0;
+int x_lt2(int i, const par_array x, const par_array y) {
+	return IS_SOME(ELEM(x, i)) && (VAL(ELEM(x, i)) < 2.0);
 }
 
-int is_neg(int i, double x) {
-	return x < 0.0;
+int is_neg(int i, const par_array x) {
+	return IS_SOME(ELEM(x, i)) && (VAL(ELEM(x, i)) < 0.0);
 }
 
 int main(int argc, char** argv) {

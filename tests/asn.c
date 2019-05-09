@@ -17,8 +17,8 @@
 #define N_TESTS 1000
 #define MAX 10
 
-int lt5(int i, double x, double y) {
-	return y < 5.0;
+int lt5(int i, const par_array x, const par_array y) {
+	return IS_SOME(ELEM(y, i)) && (VAL(ELEM(y, i)) < 5.0);
 }
 
 int main(int argc, char** argv) {
@@ -55,7 +55,7 @@ int main(int argc, char** argv) {
 		seq_t += get_timediff(t0, t1);
 
 		for(int i = 0; i < T1; i++) {
-			if(lt5(i, VAL(A1.a[i]), VAL(A2.a[i]))) {
+			if(lt5(G2L(A1, i), A1, A2)) {
 				assert( abs(VAL(R1.a[i]) - VAL(A2.a[i])) <= EPSILON);
 			} else {
 				assert( abs(VAL(R1.a[i]) - VAL(A1.a[i])) <= EPSILON);
