@@ -1,5 +1,6 @@
 #include "runtime.h"
 
+#include <stdio.h>
 #include <stdlib.h>
 #include <string.h> // for memcpy
 
@@ -8,6 +9,10 @@ par_array mk_array(const double* a, int m, int n) {
 	int len = n - m + 1;
 	//double* v = (double*)calloc(len, sizeof(double));
 	maybe* v = (maybe*)calloc(len, sizeof(maybe));
+	if(v == NULL) {
+		fprintf(stderr, "Failed to allocate memory for parrallel array\n");
+		exit(1);
+	}
 
 	if(a != NULL) {
 		for(int i = 0; i < len; i++) {
