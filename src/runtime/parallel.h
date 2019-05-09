@@ -37,4 +37,6 @@ par_array par_mask(int (*p)(double x), par_array a);
 // Returns the number of elements that are SOME and that satisfies predicate p
 int par_count(const par_array a, int (*p)(int i, double x));
 
+par_array par_asn(const par_array a, const par_array b, int (*p)(int i, double lhs, double rhs));
+
 #endif // PARALLEL_H

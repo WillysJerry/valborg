@@ -226,3 +226,19 @@ int seq_count(const par_array a, int (*p)(int i, double x)) {
 	return c;
 }
 
+par_array seq_asn(const par_array a, const par_array b, int (*p)(int i, double lhs, double rhs)) {
+	if(a.m != b.m || a.n != b.n) {
+		return mk_array(NULL, 0, -1);
+	}
+	par_array res = mk_array(NULL, a.m, a.n);
+
+	for(int i = res.m; i < res.n + 1; i++) {
+		if(SATISFIES(p, i, VAL(a.a[G2L(a, i)]), VAL(b.a[G2L(b, i)]))) {
+			res.a[G2L(res, i)] = b.a[G2L(b, i)];
+		} else {
+			res.a[G2L(res, i)] = a.a[G2L(a, i)];
+		}
+	}
+
+	return res;
+}

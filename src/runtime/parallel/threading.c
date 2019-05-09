@@ -98,6 +98,9 @@ distribution distribute(const par_array* arr, int n, unsigned char mode) {
 
 	}
 
+	dist.m = a_m;
+	dist.n = a_n;
+
 	dist.n_arrs = n;
 	
 	len = a_n - a_m + 1;			// Total length of the array segment

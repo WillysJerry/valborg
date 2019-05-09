@@ -28,4 +28,6 @@ par_array seq_scan(double (*f)(double x, double y), const par_array a, int(*p)(i
 
 int seq_count(const par_array a, int (*p)(int i, double x));
 
+par_array seq_asn(const par_array a, const par_array b, int (*p)(int i, double lhs, double rhs));
+
 #endif // SEQUENTIAL_H
