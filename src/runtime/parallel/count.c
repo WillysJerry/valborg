@@ -41,7 +41,6 @@ int par_count(const par_array a, int (*p)(int i, par_array x, void* cmp), void* 
 	// Need to round to integer to account for float (double) imprecision
 	result = round(VAL(res_array.a[0]));
 	for(int i = 1; i < NUM_THREADS; i++) {
-		printf("%f ", VAL(res_array.a[i]));
 		result += round(VAL(res_array.a[i]));
 	}
 
