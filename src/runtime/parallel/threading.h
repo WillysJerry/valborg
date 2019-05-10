@@ -1,7 +1,7 @@
 #ifndef THREADING_H
 #define THREADING_H
 
-#include "../parallel.h"
+#include "parallel.h"
 #include "../runtime.h"
 
 #define NUM_THREADS 4

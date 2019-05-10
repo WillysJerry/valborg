@@ -5,8 +5,8 @@
 #include <assert.h>
 #include <time.h>
 
-#include "../src/runtime/sequential.h"
-#include "../src/runtime/parallel.h"
+#include "../src/runtime/sequential/sequential.h"
+#include "../src/runtime/parallel/parallel.h"
 #include "../src/runtime/runtime.h"
 #include "benchmark.h"
 

@@ -3,8 +3,8 @@
 #include <math.h>
 #include <assert.h>
 
-#include "../src/runtime/sequential.h"
-#include "../src/runtime/parallel.h"
+#include "../src/runtime/sequential/sequential.h"
+#include "../src/runtime/parallel/parallel.h"
 #include "../src/runtime/runtime.h"
 
 int leq(int i, const par_array x, void* cmp) {

@@ -1,5 +1,4 @@
-#include "../sequential.h"
-#include "../runtime.h"
+#include "sequential.h"
 
 #include <stdlib.h>
 #include <string.h> // For memcpy

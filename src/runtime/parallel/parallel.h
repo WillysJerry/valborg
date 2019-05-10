@@ -6,8 +6,8 @@
 #ifndef PARALLEL_H
 #define PARALLEL_H
 
-#include "runtime.h"
-#include "parallel/threading.h"
+#include "../runtime.h"
+#include "threading.h"
 
 
 void init_par_env();

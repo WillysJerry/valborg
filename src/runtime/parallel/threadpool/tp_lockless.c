@@ -5,9 +5,6 @@
 #include <pthread.h>
 #include <stdio.h>
 
-#include "../../runtime.h"
-#include "../../parallel.h"
-
 pthread_t thrds[NUM_THREADS - 1];
 
 volatile unsigned char barrier_buffer[NUM_THREADS];

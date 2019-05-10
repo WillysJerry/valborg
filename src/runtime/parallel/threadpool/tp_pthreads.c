@@ -5,9 +5,6 @@
 #include <pthread.h>
 #include <stdio.h>
 
-#include "../../runtime.h"
-#include "../../parallel.h"
-
 pthread_t thrds[NUM_THREADS - 1];
 pthread_barrier_t barrier_barrier;
 instruction global_instruction;

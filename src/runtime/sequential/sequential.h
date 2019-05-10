@@ -6,7 +6,7 @@
 #ifndef SEQUENTIAL_H
 #define SEQUENTIAL_H
 
-#include "runtime.h"
+#include "../runtime.h"
 
 par_array seq_get(const par_array a, int (*f)(int i), int (*p)(int i, const par_array x, void* cmp), void* cmp);
 

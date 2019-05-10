@@ -5,9 +5,6 @@
 #include <pthread.h>
 #include <stdio.h>
 
-#include "../runtime.h"
-#include "../parallel.h"
-
 void set_dist_size(distribution* dist, int m, int n) {
 	int len = n - m + 1;			// Total length of the array segment
 	dist->size = len;

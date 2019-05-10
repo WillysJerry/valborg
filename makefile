@@ -10,8 +10,8 @@ PRIM_OBJ=obj/par_reduce.o obj/par_get.o obj/par_concat.o obj/par_map.o obj/par_c
 PTHRD_OBJ=obj/par_tp_pthreads.o obj/par_threading.o obj/par_parallel.o $(PRIM_OBJ)
 LCKLSS_OBJ=obj/par_tp_lockless.o obj/par_threading.o obj/par_parallel.o $(PRIM_OBJ)
 
-PAR_OBJ=$(PTHRD_OBJ)
-#PAR_OBJ=$(LCKLSS_OBJ)
+#PAR_OBJ=$(PTHRD_OBJ)
+PAR_OBJ=$(LCKLSS_OBJ)
 
 
 # Probably a good idea to make the "runtime" into a library or something instead of directly linking the object files (mostly because it's annoying and looks ugly, and also because it makes the most sense?)
@@ -30,6 +30,10 @@ obj/par_%.o: src/runtime/parallel/%.c
 obj/par_%.o: src/runtime/parallel/threadpool/%.c
 	mkdir -p obj
 	$(CC) $(CFLAGS) -c $^ -o $@ 
+obj/par_%.o: src/runtime/parallel/primitives/%.c
+	mkdir -p obj
+	$(CC) $(CFLAGS) -c $^ -o $@ 
+
 
 # Shared interface between both the parallel and sequential runtime
 obj/runtime.o: src/runtime/runtime.c
