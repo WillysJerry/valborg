@@ -6,7 +6,11 @@
 
 // Create a parallel array of floats
 par_array mk_array(const double* a, int m, int n) {
-	int len = n - m + 1;
+	if(n < m) {
+		fprintf(stderr, "Upper bound is smaller then lower bound\n");
+		exit(1);
+	}
+	size_t len = n - m + 1;
 	//double* v = (double*)calloc(len, sizeof(double));
 	maybe* v = (maybe*)calloc(len, sizeof(maybe));
 	if(v == NULL) {

@@ -9,7 +9,7 @@ PAR_OBJ=obj/par_fast_barrier.o obj/par_threadpool.o obj/par_threading.o obj/par_
 
 # Probably a good idea to make the "runtime" into a library or something instead of directly linking the object files (mostly because it's annoying and looks ugly, and also because it makes the most sense?)
 
-tests: test_reduce test_communication test_concat test_map test_scan test_asn
+tests: test_reduce test_communication test_concat test_map test_scan test_asn test_qsort test_abs
 
 # Prefix all sequential runtime object files with seq_
 obj/seq_%.o: src/runtime/sequential/%.c
@@ -53,6 +53,13 @@ test_asn: $(GLOB_OBJ) $(SEQ_OBJ) $(PAR_OBJ) tests/asn.c
 	mkdir -p bin
 	$(CC) $(CFLAGS) $^ -o bin/asn $(LIB) 
 
+test_qsort: $(GLOB_OBJ) $(SEQ_OBJ) $(PAR_OBJ) tests/qsort.c
+	mkdir -p bin
+	$(CC) $(CFLAGS) $^ -o bin/qsort $(LIB) 
+
+test_abs: $(GLOB_OBJ) $(SEQ_OBJ) $(PAR_OBJ) tests/abs.c
+	mkdir -p bin
+	$(CC) $(CFLAGS) $^ -o bin/abs $(LIB) 
 clean:
 	rm -rf bin/* obj/*
 
