@@ -129,29 +129,18 @@ void kill_threadpool() {
 }
 
 void execute_in_parallel(void (*work)(distribution dist, int id, par_array* out, void* f, void* p, void* args, void* cmp), distribution dist, par_array* out, void* f, void* p, void* args, void* cmp) {
-	/*par_array ret;
-
-	if(out_m <= out_n) {
-		ret = mk_array(NULL, out_m, out_n);
-	}
-	*/
 
 	global_instruction.work = work;
 	global_instruction.f 	= f;
 	global_instruction.p	= p;
 	global_instruction.args = args;
 	global_instruction.dist = dist;
-	//global_instruction.output = &ret;
 	global_instruction.output = out;
 	global_instruction.cmp = cmp;
 
 	// Barrier. Wait for all active workers to finish
-	//barrier();
 	BARRIER();
 	// Worker threads perform their
 	// work here
-	//barrier();
 	BARRIER();
-
-	//return ret;
 }

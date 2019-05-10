@@ -28,7 +28,11 @@ void asn_thrd(distribution dist, int id, par_array* out, void* f, void* p, void*
 par_array par_asn(const par_array a, const par_array b, int (*p)(int i, par_array lhs, par_array rhs, void* cmp), void* cmp) {
 
 	par_array arrs[] = {a, b};
-	distribution dist = distribute(arrs, 2, DISTRIBUTION_STRICT);
+	if(a.m != b.m || a.n != b.n) {
+		fprintf(stderr, "[ASN] Input array bounds differ.\n");
+		exit(1);
+	}
+	distribution dist = distribute(arrs, 2, a.m, a.n);
 	par_array res = mk_array(NULL, dist.m, dist.n);
 
 	execute_in_parallel(asn_thrd, dist, &res, NULL, p, NULL, cmp);

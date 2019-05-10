@@ -76,7 +76,7 @@ par_array par_scan(double (*f)(double x, double y), const par_array a, int (*p)(
 	int in = 0, out = 0;
 
 
-	dist = distribute(&a, 1, DISTRIBUTION_STRICT);
+	dist = distribute(&a, 1, a.m, a.n);
 	if(p != NULL) {
 		execute_in_parallel(scan_msk_thrd, dist, work_arrays, NULL, (void*)p, NULL, cmp);
 	} else {

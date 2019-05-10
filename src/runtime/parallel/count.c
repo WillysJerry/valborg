@@ -33,7 +33,7 @@ int par_count(const par_array a, int (*p)(int i, par_array x, void* cmp), void* 
 	par_array res_array = mk_array(NULL, 0, NUM_THREADS-1);
 	int result;
 
-	dist = distribute(&a, 1, DISTRIBUTION_STRICT);
+	dist = distribute(&a, 1, a.m, a.n);
 
 	execute_in_parallel(count_thrd, dist, &res_array, NULL, p, NULL, cmp);
 	free_distribution(dist);

@@ -21,7 +21,8 @@ typedef struct _distribution {
 	int size;			// Amount of elements in the individual arrays
 } distribution;
 
-distribution distribute(const par_array* arr, int n, unsigned char mode);
+//distribution distribute(const par_array* arr, int n, unsigned char mode);
+distribution distribute(const par_array* arr, int n_arrays, int m, int n);
 void set_dist_size(distribution* dist, int m, int n);
 void free_distribution(distribution dist);
 void print_distribution(distribution dist);

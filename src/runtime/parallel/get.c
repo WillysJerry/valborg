@@ -33,7 +33,7 @@ par_array par_get(const par_array a, int (*f)(int i), int (*p)(int i, par_array 
 	distribution dist;
 	par_array res_array = mk_array(NULL, a.m, a.n);
 
-	dist = distribute(&a, 1, DISTRIBUTION_STRICT);
+	dist = distribute(&a, 1, a.m, a.n);
 
 	execute_in_parallel(get_thrd, dist, &res_array, f, p, NULL, cmp);
 	free_distribution(dist);

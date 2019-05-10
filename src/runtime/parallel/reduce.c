@@ -57,7 +57,7 @@ double par_reduce(double (*f)(double x, double y), const par_array a, int (*p)(i
 
 	par_array res_array = mk_array(NULL, a.m, NUM_THREADS - 1);
 
-	dist = distribute(&a, 1, DISTRIBUTION_STRICT);
+	dist = distribute(&a, 1, a.m, a.n);
 
 	execute_in_parallel(reduce_thrd, dist, &res_array, (void*)f, (void*)p, NULL, cmp);
 

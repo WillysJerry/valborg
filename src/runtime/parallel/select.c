@@ -27,7 +27,7 @@ par_array par_select(const par_array a, int m, int n, int (*p)(int i, const par_
 	distribution dist;
 	par_array res_array = mk_array(NULL, m, n);
 
-	dist = distribute(&a, 1, DISTRIBUTION_STRICT);
+	dist = distribute(&a, 1, a.m, a.n);
 	set_dist_size(&dist, m, n);
 
 	execute_in_parallel(select_thrd, dist, &res_array, NULL, p, NULL, cmp);

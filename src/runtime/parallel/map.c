@@ -120,7 +120,7 @@ void map3_thrd(distribution dist, int id, par_array* out, void* f, void* p, void
 par_array par_map1(double (*f)(double x), const par_array a, int (*p)(int i, par_array x, void* cmp), void* cmp) {
 
 	par_array arrs[] = { a };
-	distribution dist = distribute(arrs, 1, DISTRIBUTION_INTERSECTION);
+	distribution dist = distribute(arrs, 1, a.m, a.n);
 	par_array result = mk_array(NULL, dist.m, dist.n);
 
 
@@ -133,7 +133,8 @@ par_array par_map1(double (*f)(double x), const par_array a, int (*p)(int i, par
 
 par_array par_map2(double (*f)(double x, double y), const par_array a, const par_array b, int (*p)(int i, par_array x, par_array y, void* cmp), void* cmp) {
 	par_array arrs[] = { a, b };
-	distribution dist = distribute(arrs, 2, DISTRIBUTION_INTERSECTION);
+	bounds bound = intersection(arrs, 3);
+	distribution dist = distribute(arrs, 2, bound.m, bound.n);
 	par_array result = mk_array(NULL, dist.m, dist.n);
 
 
@@ -147,7 +148,9 @@ par_array par_map2(double (*f)(double x, double y), const par_array a, const par
 par_array par_map3(double (*f)(double x, double y, double z), const par_array a, const par_array b, const par_array c, int (*p)(int i, par_array x, par_array y, par_array z, void* cmp), void* cmp) {
 
 	par_array arrs[] = { a, b, c };
-	distribution dist = distribute(arrs, 3, DISTRIBUTION_INTERSECTION);
+	bounds bound = intersection(arrs, 3);
+
+	distribution dist = distribute(arrs, 3, bound.m, bound.n);
 	par_array result = mk_array(NULL, dist.m, dist.n);
 
 

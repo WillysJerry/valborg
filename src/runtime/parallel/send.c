@@ -32,7 +32,7 @@ void send_thrd(distribution dist, int id, par_array* out, void* f, void* p, void
 void par_send(par_array a, int (*f)(int i), const par_array b, int (*p)(int i, const par_array lhs, const par_array rhs, void* cmp), void* cmp) {
 	distribution dist;
 
-	dist = distribute(&b, 1, DISTRIBUTION_STRICT);
+	dist = distribute(&b, 1, b.m, b.n);
 
 	execute_in_parallel(send_thrd, dist, NULL, f, p, &a, cmp);
 	free_distribution(dist);

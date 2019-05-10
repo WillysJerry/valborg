@@ -30,7 +30,7 @@ par_array par_concat(const par_array a, const par_array b) {
 	int res_size = length(a) + length(b);
 
 	par_array arrs[] = {a, b};
-	dist = distribute(arrs, 2, DISTRIBUTION_SUM);
+	dist = distribute(arrs, 2, a.m, a.m + length(a) + length(b) - 1);
 	par_array res_array = mk_array(NULL, a.m, a.m + res_size - 1);
 
 	execute_in_parallel(concat_thrd, dist, &res_array, NULL, NULL, NULL, NULL);
