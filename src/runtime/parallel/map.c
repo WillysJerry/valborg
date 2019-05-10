@@ -132,10 +132,13 @@ par_array par_map1(double (*f)(double x), const par_array a, int (*p)(int i, par
 }
 
 par_array par_map2(double (*f)(double x, double y), const par_array a, const par_array b, int (*p)(int i, par_array x, par_array y, void* cmp), void* cmp) {
+	par_array result;
 	par_array arrs[] = { a, b };
 	bounds bound = intersection(arrs, 3);
+
+	
 	distribution dist = distribute(arrs, 2, bound.m, bound.n);
-	par_array result = mk_array(NULL, dist.m, dist.n);
+	result = mk_array(NULL, dist.m, dist.n);
 
 
 	// Start parallel execution

@@ -10,11 +10,11 @@
 #include "benchmark.h"
 
 #define EPSILON 0.01
-#define T1 5 
+#define T1 100 
 #define T2 62441 
 #define T3 63595 
 #define T4 800000
-#define N_TESTS 50
+#define N_TESTS 100
 #define MAX 10
 
 int dst(int i) {

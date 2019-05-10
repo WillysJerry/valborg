@@ -4,7 +4,14 @@ LIB=-lpthread -lm
 
 GLOB_OBJ=obj/runtime.o
 SEQ_OBJ=obj/seq_sequential.o
-PAR_OBJ=obj/par_fast_barrier.o obj/par_threadpool.o obj/par_threading.o obj/par_parallel.o obj/par_reduce.o obj/par_get.o obj/par_concat.o obj/par_map.o obj/par_count.o obj/par_select.o obj/par_send.o obj/par_scan.o obj/par_asn.o
+
+PRIM_OBJ=obj/par_reduce.o obj/par_get.o obj/par_concat.o obj/par_map.o obj/par_count.o obj/par_select.o obj/par_send.o obj/par_scan.o obj/par_asn.o
+
+PTHRD_OBJ=obj/par_tp_pthreads.o obj/par_threading.o obj/par_parallel.o $(PRIM_OBJ)
+LCKLSS_OBJ=obj/par_tp_lockless.o obj/par_threading.o obj/par_parallel.o $(PRIM_OBJ)
+
+PAR_OBJ=$(PTHRD_OBJ)
+#PAR_OBJ=$(LCKLSS_OBJ)
 
 
 # Probably a good idea to make the "runtime" into a library or something instead of directly linking the object files (mostly because it's annoying and looks ugly, and also because it makes the most sense?)
@@ -16,8 +23,11 @@ obj/seq_%.o: src/runtime/sequential/%.c
 	mkdir -p obj
 	$(CC) $(CFLAGS) -c $^ -o $@ 
 
-# Prefix all parallel runtime object files with seq_
+# Prefix all parallel runtime object files with par_
 obj/par_%.o: src/runtime/parallel/%.c
+	mkdir -p obj
+	$(CC) $(CFLAGS) -c $^ -o $@ 
+obj/par_%.o: src/runtime/parallel/threadpool/%.c
 	mkdir -p obj
 	$(CC) $(CFLAGS) -c $^ -o $@ 
 
