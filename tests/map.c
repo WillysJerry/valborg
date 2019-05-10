@@ -30,11 +30,11 @@ double mul3(double x, double y, double z) {
 	return x*y*z;
 }
 
-int x_lt2(int i, const par_array x, const par_array y) {
+int x_lt2(int i, const par_array x, const par_array y, void* cmp) {
 	return IS_SOME(ELEM(x, i)) && (VAL(ELEM(x, i)) < 2.0);
 }
 
-int is_neg(int i, const par_array x) {
+int is_neg(int i, const par_array x, void* cmp) {
 	return IS_SOME(ELEM(x, i)) && (VAL(ELEM(x, i)) < 0.0);
 }
 
@@ -75,7 +75,7 @@ int main(int argc, char** argv) {
 
 	init_par_env();
 
-	R1 = par_map1(square, A, NULL);
+	R1 = par_map1(square, A, NULL, NULL);
 	printf("Square A:\n");
 	for(int i = 0; i < length(R1); i++) {
 		printf("%f ", VAL(R1.a[i]));
@@ -83,20 +83,20 @@ int main(int argc, char** argv) {
 	free(R1.a);
 
 	printf("\nSum A B:\n");
-	R1 = par_map2(sum2, A, B, x_lt2);
+	R1 = par_map2(sum2, A, B, x_lt2, NULL);
 	for(int i = 0; i < length(R1); i++) {
 		printf("%f ", VAL(R1.a[i]));
 	}
 	free(R1.a);
 
 	printf("\nMul A B C:\n");
-	R1 = par_map3(mul3, A, B, C, NULL);
+	R1 = par_map3(mul3, A, B, C, NULL, NULL);
 	for(int i = 0; i < length(R1); i++) {
 		printf("%f ", VAL(R1.a[i]));
 	}
 	free(R1.a);
 
-	R1 = par_map1(neg, D, is_neg);
+	R1 = par_map1(neg, D, is_neg, NULL);
 	printf("Abs D:\n");
 	for(int i = 0; i < length(R1); i++) {
 		printf("%f ", VAL(R1.a[i]));
@@ -105,12 +105,12 @@ int main(int argc, char** argv) {
 
 	for(int i = 0; i < N_TESTS; i++) {
 		t0 = get_time_usec();
-		R1 = par_map1(square, E, NULL);
+		R1 = par_map1(square, E, NULL, NULL);
 		t1 = get_time_usec();
 		par_t += get_timediff(t0, t1);
 
 		t0 = get_time_usec();
-		R2 = seq_map1(square, E, NULL);
+		R2 = seq_map1(square, E, NULL, NULL);
 		t1 = get_time_usec();
 		seq_t += get_timediff(t0, t1);
 
@@ -128,12 +128,12 @@ int main(int argc, char** argv) {
 
 	for(int i = 0; i < N_TESTS; i++) {
 		t0 = get_time_usec();
-		R1 = par_map2(sum2, F, F, NULL);
+		R1 = par_map2(sum2, F, F, NULL, NULL);
 		t1 = get_time_usec();
 		par_t += get_timediff(t0, t1);
 
 		t0 = get_time_usec();
-		R2 = seq_map2(sum2, F, F, NULL);
+		R2 = seq_map2(sum2, F, F, NULL, NULL);
 		t1 = get_time_usec();
 		seq_t += get_timediff(t0, t1);
 
@@ -151,12 +151,12 @@ int main(int argc, char** argv) {
 
 	for(int i = 0; i < N_TESTS; i++) {
 		t0 = get_time_usec();
-		R1 = par_map3(mul3, G, G, G, NULL);
+		R1 = par_map3(mul3, G, G, G, NULL, NULL);
 		t1 = get_time_usec();
 		par_t += get_timediff(t0, t1);
 
 		t0 = get_time_usec();
-		R2 = seq_map3(mul3, G, G, G, NULL);
+		R2 = seq_map3(mul3, G, G, G, NULL, NULL);
 		t1 = get_time_usec();
 		seq_t += get_timediff(t0, t1);
 

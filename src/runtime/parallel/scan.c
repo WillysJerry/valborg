@@ -7,7 +7,7 @@
 #include <math.h>
 
 // Masks out elements based on input predicate from the array before performing the scan
-void scan_msk_thrd(distribution dist, int id, par_array* out, void* f, void* p, void* args) { 
+void scan_msk_thrd(distribution dist, int id, par_array* out, void* f, void* p, void* args, void* cmp) { 
 	int size = dist.b_size[id];
 
 	// Just assume that these arrays were passed...
@@ -15,13 +15,13 @@ void scan_msk_thrd(distribution dist, int id, par_array* out, void* f, void* p, 
 	maybe* A_values = A->a;
 
 	// Cast void pointers to functions, this is not very readable
-	int (*pred)(int i, par_array x) =
-		(int (*)(int, par_array)) p;
+	int (*pred)(int i, const par_array x, void* cmp) =
+		(int (*)(int, const par_array, void*)) p;
 
 	int base = A->m + dist.blocks[id];
 
 	for(int i = base; i < base + size; i++) {
-		if(SATISFIES(pred, i, *A)) {
+		if(SATISFIES(pred, i, *A, cmp)) {
 			out->a[ G2L(*out, i) ] = A_values[ G2L(*A, i) ];	
 		} else {
 			out->a[ G2L(*out, i) ] = NONE;
@@ -29,7 +29,7 @@ void scan_msk_thrd(distribution dist, int id, par_array* out, void* f, void* p, 
 	}
 }
 
-void scan_thrd(distribution dist, int id, par_array* out, void* f, void* p, void* args) {
+void scan_thrd(distribution dist, int id, par_array* out, void* f, void* p, void* args, void* cmp) {
 	int size = dist.b_size[id];
 
 	const par_array* A = dist.arrs;
@@ -70,7 +70,7 @@ void scan_thrd(distribution dist, int id, par_array* out, void* f, void* p, void
 }
 
 
-par_array par_scan(double (*f)(double x, double y), const par_array a, int (*p)(int i, par_array x)) {
+par_array par_scan(double (*f)(double x, double y), const par_array a, int (*p)(int i, par_array x, void* cmp), void* cmp) {
 	distribution dist;
 	par_array work_arrays[2];
 	int in = 0, out = 0;
@@ -78,7 +78,7 @@ par_array par_scan(double (*f)(double x, double y), const par_array a, int (*p)(
 
 	dist = distribute(&a, 1, DISTRIBUTION_STRICT);
 	if(p != NULL) {
-		execute_in_parallel(scan_msk_thrd, dist, work_arrays, NULL, (void*)p, NULL);
+		execute_in_parallel(scan_msk_thrd, dist, work_arrays, NULL, (void*)p, NULL, cmp);
 	} else {
 		work_arrays[0] = clone_array(a, a.m, a.n);
 		work_arrays[1] = clone_array(a, a.m, a.n);
@@ -92,7 +92,7 @@ par_array par_scan(double (*f)(double x, double y), const par_array a, int (*p)(
 
 		// TODO: Need to shrink the area that gets operated on in parallel at every
 		// iteration so that we don't need to go through the entire array every time.
-		execute_in_parallel(scan_thrd, dist, work_arrays + out, (void*)f, NULL, (void*)(i));
+		execute_in_parallel(scan_thrd, dist, work_arrays + out, (void*)f, NULL, (void*)(i), cmp);
 		set_dist_size(&dist, a.m + (0x1 << (i)), a.n);
 	}
 	free_distribution(dist);

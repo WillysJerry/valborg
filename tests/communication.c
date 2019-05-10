@@ -18,7 +18,7 @@
 #define N_TESTS 1000
 #define MAX 10
 
-int lt5(int i, const par_array x) {
+int lt5(int i, const par_array x, void* cmp) {
 	return IS_SOME(ELEM(x, i)) && (VAL(ELEM(x, i)) < 5.0);
 }
 
@@ -52,12 +52,12 @@ int main(int argc, char** argv) {
 	par_t = 0.0;
 	for(int i = 0; i < N_TESTS; i++) {
 		t0 = get_time_usec();
-		R1 = par_get(A, src1, lt5);
+		R1 = par_get(A, src1, lt5, NULL);
 		t1 = get_time_usec();
 		par_t += get_timediff(t0, t1);
 
 		t0 = get_time_usec();
-		R2 = seq_get(A, src1, lt5);
+		R2 = seq_get(A, src1, lt5, NULL);
 		t1 = get_time_usec();
 		seq_t += get_timediff(t0, t1);
 
@@ -66,7 +66,7 @@ int main(int argc, char** argv) {
 			// a local index) to global space, and then apply the src function on that,
 			// and then convert the resulting index back to local space.........
 			cnv = G2L(A, src1(L2G(A, i)) );
-			if(lt5(src1(L2G(A, i)), A)) {
+			if(lt5(src1(L2G(A, i)), A, NULL)) {
 				assert(abs(VAL(R1.a[i]) - VAL(A.a[cnv])) <= EPSILON);
 				assert(abs(VAL(R2.a[i]) - VAL(A.a[cnv])) <= EPSILON);
 			}

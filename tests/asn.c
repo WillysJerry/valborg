@@ -17,7 +17,7 @@
 #define N_TESTS 1000
 #define MAX 10
 
-int lt5(int i, const par_array x, const par_array y) {
+int lt5(int i, const par_array x, const par_array y, void* cmp) {
 	return IS_SOME(ELEM(y, i)) && (VAL(ELEM(y, i)) < 5.0);
 }
 
@@ -45,17 +45,17 @@ int main(int argc, char** argv) {
 	par_t = 0.0;
 	for(int i = 0; i < N_TESTS; i++) {
 		t0 = get_time_usec();
-		R1 = par_asn(A1, A2, lt5);
+		R1 = par_asn(A1, A2, lt5, NULL);
 		t1 = get_time_usec();
 		par_t += get_timediff(t0, t1);
 
 		t0 = get_time_usec();
-		R2 = seq_asn(A1, A2, lt5);
+		R2 = seq_asn(A1, A2, lt5, NULL);
 		t1 = get_time_usec();
 		seq_t += get_timediff(t0, t1);
 
 		for(int i = 0; i < T1; i++) {
-			if(lt5(G2L(A1, i), A1, A2)) {
+			if(lt5(G2L(A1, i), A1, A2, NULL)) {
 				assert( abs(VAL(R1.a[i]) - VAL(A2.a[i])) <= EPSILON);
 			} else {
 				assert( abs(VAL(R1.a[i]) - VAL(A1.a[i])) <= EPSILON);

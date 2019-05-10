@@ -24,10 +24,11 @@
 
 // Instructions to be used each time a thread in the threadpool is activated 
 typedef struct _instruction {
-	void (*work)(distribution dist, int id, par_array* out, void* f, void* p, void* args);	// Work to be executed on each thread
+	void (*work)(distribution dist, int id, par_array* out, void* f, void* p, void* args, void* cmp);	// Work to be executed on each thread
 	void* f;				// Optional function
 	void* p;				// Optional predicate
 	void* args;
+	void* cmp;
 	distribution dist;
 	par_array* output;
 } instruction;
@@ -83,7 +84,7 @@ void* worker(void* args) {
 		// Fetch instruction
 		instr = global_instruction;
 
-		instr.work(instr.dist, id, instr.output, instr.f, instr.p, instr.args);
+		instr.work(instr.dist, id, instr.output, instr.f, instr.p, instr.args, instr.cmp);
 		//barrier();
 		BARRIER();
 	}
@@ -127,7 +128,7 @@ void kill_threadpool() {
 	DESTROY_BARRIER();
 }
 
-void execute_in_parallel(void (*work)(distribution dist, int id, par_array* out, void* f, void* p, void* args), distribution dist, par_array* out, void* f, void* p, void* args) {
+void execute_in_parallel(void (*work)(distribution dist, int id, par_array* out, void* f, void* p, void* args, void* cmp), distribution dist, par_array* out, void* f, void* p, void* args, void* cmp) {
 	/*par_array ret;
 
 	if(out_m <= out_n) {
@@ -142,6 +143,7 @@ void execute_in_parallel(void (*work)(distribution dist, int id, par_array* out,
 	global_instruction.dist = dist;
 	//global_instruction.output = &ret;
 	global_instruction.output = out;
+	global_instruction.cmp = cmp;
 
 	// Barrier. Wait for all active workers to finish
 	//barrier();

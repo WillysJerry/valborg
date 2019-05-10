@@ -33,7 +33,7 @@ void init_threadpool();
 void kill_threadpool();
 
 //par_array execute_in_parallel(void (*work)(distribution dist, int id, par_array* out, void* f, void* p, void* args), distribution dist, int out_m, int out_n, void* f, void* p, void* args);
-void execute_in_parallel(void (*work)(distribution dist, int id, par_array* out, void* f, void* p, void* args), distribution dist, par_array* out, void* f, void* p, void* args);
+void execute_in_parallel(void (*work)(distribution dist, int id, par_array* out, void* f, void* p, void* args, void* cmp), distribution dist, par_array* out, void* f, void* p, void* args, void* cmp);
 
 void barrier();
 

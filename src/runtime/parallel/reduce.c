@@ -7,7 +7,7 @@
 #include <math.h>
 
 // Evaluates one level of the reduction tree
-void reduce_thrd(distribution dist, int id, par_array* out, void* f, void* p, void* args) {
+void reduce_thrd(distribution dist, int id, par_array* out, void* f, void* p, void* args, void* cmp) {
 	int i;
 	double res = 0.0;
 	int size = dist.b_size[id];
@@ -17,12 +17,12 @@ void reduce_thrd(distribution dist, int id, par_array* out, void* f, void* p, vo
 	int arrbase = dist.m + dist.blocks[id];
 	
 	// Cast p pointer to predicate function
-	int (*pred)(int i, par_array x) =
-		(int (*)(int, par_array)) p;
+	int (*pred)(int i, const par_array x, void* cmp) =
+		(int (*)(int, const par_array, void*)) p;
 
 
 	for(i = 0; i < size; i++) {
-		if(IS_SOME(A_values[i]) && SATISFIES(pred, i + arrbase, *A)) {
+		if(IS_SOME(A_values[i]) && SATISFIES(pred, i + arrbase, *A, cmp)) {
 			res = VAL(A_values[i]); 
 			break;
 		}
@@ -43,7 +43,7 @@ void reduce_thrd(distribution dist, int id, par_array* out, void* f, void* p, vo
 		(double (*)(double x, double y)) f;
 
 	for(i += 1; i < size; i++) {
-		if(IS_SOME(A_values[i]) && SATISFIES(pred, i + arrbase, *A)) {
+		if(IS_SOME(A_values[i]) && SATISFIES(pred, i + arrbase, *A, cmp)) {
 			res = func(res, VAL(A_values[i]));	
 		}
 	}
@@ -51,7 +51,7 @@ void reduce_thrd(distribution dist, int id, par_array* out, void* f, void* p, vo
 	out->a[id] = SOME(res);
 }
 
-double par_reduce(double (*f)(double x, double y), const par_array a, int (*p)(int i, par_array x)) {
+double par_reduce(double (*f)(double x, double y), const par_array a, int (*p)(int i, par_array x, void* cmp), void* cmp) {
 	distribution dist;
 	double result = 0.0;
 
@@ -59,7 +59,7 @@ double par_reduce(double (*f)(double x, double y), const par_array a, int (*p)(i
 
 	dist = distribute(&a, 1, DISTRIBUTION_STRICT);
 
-	execute_in_parallel(reduce_thrd, dist, &res_array, (void*)f, (void*)p, NULL);
+	execute_in_parallel(reduce_thrd, dist, &res_array, (void*)f, (void*)p, NULL, cmp);
 
 	result = VAL(res_array.a[0]);
 	for(int i = 1; i < NUM_THREADS; i++) {

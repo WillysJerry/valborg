@@ -25,10 +25,10 @@ double mul2(double x, double y) {
 	return x*y;
 }
 
-int gt4(int i, const par_array x) {
+int gt4(int i, const par_array x, void* cmp) {
 	return IS_SOME(ELEM(x, i)) && (VAL(ELEM(x, i)) > 4);
 }
-int gt100(int i, const par_array x) {
+int gt100(int i, const par_array x, void* cmp) {
 	return IS_SOME(ELEM(x, i)) && (VAL(ELEM(x, i)) > 100);
 }
 
@@ -69,8 +69,8 @@ int main(int argc, char** argv) {
 	const par_array D = mk_array(arr4, 0, T4-1);
 
 	printf("Initial test...\n");
-	R1 = par_scan(sum2, S, NULL);
-	R2 = seq_scan(sum2, S, NULL);
+	R1 = par_scan(sum2, S, NULL, NULL);
+	R2 = seq_scan(sum2, S, NULL, NULL);
 	for(int i = 0; i < length(S); i++) {
 		printf("P:%.1f S:%.1f\n", VAL(R1.a[i]), VAL(R2.a[i]));
 
@@ -83,12 +83,12 @@ int main(int argc, char** argv) {
 	par_t = 0.0;
 	for(int i = 0; i < N_TESTS; i++) {
 		t0 = get_time_usec();
-		R1 = par_scan(sum2, A, NULL);
+		R1 = par_scan(sum2, A, NULL, NULL);
 		t1 = get_time_usec();
 		par_t += get_timediff(t0, t1);
 
 		t0 = get_time_usec();
-		R2 = seq_scan(sum2, A, NULL);
+		R2 = seq_scan(sum2, A, NULL, NULL);
 		t1 = get_time_usec();
 		seq_t += get_timediff(t0, t1);
 
@@ -111,12 +111,12 @@ int main(int argc, char** argv) {
 	par_t = 0.0;
 	for(int i = 0; i < N_TESTS; i++) {
 		t0 = get_time_usec();
-		R1 = par_scan(sum2, B, gt4);
+		R1 = par_scan(sum2, B, gt4, NULL);
 		t1 = get_time_usec();
 		par_t += get_timediff(t0, t1);
 
 		t0 = get_time_usec();
-		R2 = seq_scan(sum2, B, gt4);
+		R2 = seq_scan(sum2, B, gt4, NULL);
 		t1 = get_time_usec();
 		seq_t += get_timediff(t0, t1);
 	}
@@ -131,12 +131,12 @@ int main(int argc, char** argv) {
 	par_t = 0.0;
 	for(int i = 0; i < N_TESTS; i++) {
 		t0 = get_time_usec();
-		R1 = par_scan(sum2, C, gt4);
+		R1 = par_scan(sum2, C, gt4, NULL);
 		t1 = get_time_usec();
 		par_t += get_timediff(t0, t1);
 
 		t0 = get_time_usec();
-		R2 = seq_scan(sum2, C, gt4);
+		R2 = seq_scan(sum2, C, gt4, NULL);
 		t1 = get_time_usec();
 		seq_t += get_timediff(t0, t1);
 	}
@@ -151,12 +151,12 @@ int main(int argc, char** argv) {
 	par_t = 0.0;
 	for(int i = 0; i < N_TESTS; i++) {
 		t0 = get_time_usec();
-		R1 = par_scan(sum2, D, gt100);
+		R1 = par_scan(sum2, D, gt100, NULL);
 		t1 = get_time_usec();
 		par_t += get_timediff(t0, t1);
 
 		t0 = get_time_usec();
-		R2 = seq_scan(sum2, D, gt100);
+		R2 = seq_scan(sum2, D, gt100, NULL);
 		t1 = get_time_usec();
 		seq_t += get_timediff(t0, t1);
 	}

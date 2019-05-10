@@ -21,7 +21,7 @@
 // Macro for predicate checking
 #define SATISFIES(P, ...) ( ((P) == NULL || (P(__VA_ARGS__)) ) )
 
-#define ELEM(P, I) ((P).a[G2L(P, (i))])
+#define ELEM(P, I) ((P).a[G2L( (P), (I) )])
 
 typedef struct _bounds {
 	int m, n;
