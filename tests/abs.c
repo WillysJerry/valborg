@@ -17,52 +17,29 @@
 #define N_TESTS 100
 #define MAX 10
 
-int lt0(int i, const par_array x, void* cmp) {
-	return IS_SOME(ELEM(x, i)) && (VAL(ELEM(x, i)) < 0.0);
-}
-
-double neg(double x) {
-	return -x;
-}
-
-int rhs_is_some(int i, const par_array lhs, const par_array rhs, void* cmp) {
-	return IS_SOME(ELEM(rhs, i));
-
+double neg_if_neg(double x) {
+	return x < 0.0 ? -x : x;
 }
 
 double par_abs(par_array in) {
 	double t0, t1;
-	double seq_t, par_t;
-	par_array R1, R2; 	// Resulting array
-	par_array P_absed, S_absed;
+	double par_t;
+	par_array R1;
+	par_array S_absed;
 
-	seq_t = 0.0;
 	par_t = 0.0;
 	for(int i = 0; i < N_TESTS; i++) {
 		t0 = get_time_usec();
-		P_absed = par_map1(neg, in, lt0, NULL);
-		R1 = par_asn(in, P_absed, rhs_is_some, NULL);
+		R1 = par_map1(neg_if_neg, in, NULL, NULL);
 		t1 = get_time_usec();
 		par_t += get_timediff(t0, t1);
 
-		/*t0 = get_time_usec();
-		S_absed = par_map1(neg, in, lt0, NULL);
-		R2 = seq_asn(in, S_absed, rhs_is_some, NULL);
-		t1 = get_time_usec();
-		seq_t += get_timediff(t0, t1);*/
-
-		//assert(length(R1) == length(R2));
 		for(int i = 0; i < length(R1); i++) {
 			assert(VAL(R1.a[i]) > (0.0 - EPSILON));
-			//assert(VAL(R2.a[i]) > (0.0 - EPSILON));
 		}
 
 		free(R1.a);
-		free(P_absed.a);
-		/*free(R2.a);
-		free(S_absed.a);*/
 	}
-	//seq_t /= N_TESTS;
 	par_t /= N_TESTS;
 	return par_t;
 
@@ -77,10 +54,12 @@ double seq_abs(par_array in) {
 
 		t0 = get_time_usec();
 		R = mk_array(NULL, in.m, in.n);
-		if(IS_SOME(in.a[i]) && (VAL(in.a[i]) < (0.0 - EPSILON)) ) {
-			R.a[i] = SOME( -VAL(in.a[i]) );
-		} else {
-			R.a[i] = in.a[i];
+		for(int j = 0; j < T1; j++) {
+			if(IS_SOME(in.a[j]) && (VAL(in.a[j]) < (0.0 - EPSILON)) ) {
+				R.a[j] = SOME( -VAL(in.a[j]) );
+			} else {
+				R.a[j] = in.a[j];
+			}
 		}
 		t1 = get_time_usec();
 		seq_t += get_timediff(t0, t1);
@@ -105,12 +84,13 @@ int main(int argc, char** argv) {
 	}
 
 	par_array A = mk_array(arr0, 0, T1-1);
+	double seq_t, par_t;
 
+	seq_t = seq_abs(A);
 	init_par_env();
-
-	log_benchmark(seq_abs(A), par_abs(A), T1, "abs");
-
+		par_t = par_abs(A);
 	destroy_par_env();
+	log_benchmark(seq_t, par_t, T1, "abs");
 
 	return 0;
 }
