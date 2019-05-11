@@ -10,8 +10,8 @@ par_array mk_array(const double* a, int m, int n) {
 	assert(n >= m);
 
 	size_t len = n - m + 1;
-	//double* v = (double*)calloc(len, sizeof(double));
-	maybe* v = (maybe*)calloc(len, sizeof(maybe));
+
+	maybe* v = (maybe*)malloc(sizeof(maybe) * len);
 	if(v == NULL) {
 		fprintf(stderr, "Failed to allocate memory for parrallel array\n");
 		exit(1);
