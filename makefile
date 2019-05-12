@@ -1,5 +1,21 @@
+ifndef T
+# Default number of threads to number of processors if OS is supported, otherwise run on 1 core
+NPROCS=1
+OS=$(shell uname -s)
+
+ifeq ($(OS),Linux)	# Linux
+NPROCS=$(shell grep -c ^processor /proc/cpuinfo)
+endif
+
+ifeq ($(OS),Darwin)	# Mac OS X
+NPROCS=$(shell system_profiler | awk '/Number Of CPUs/{print $4}{next;}')
+endif
+
+T=$(NPROCS)
+endif
+
 CC=gcc
-CFLAGS=-Wall -O3 -g -DNUM_THREADS=1
+CFLAGS=-Wall -O3 -g -DNUM_THREADS=$(T)
 LIB=-lpthread -lm
 
 GLOB_OBJ=obj/runtime.o
