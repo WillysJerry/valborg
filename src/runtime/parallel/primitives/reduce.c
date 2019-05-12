@@ -55,7 +55,7 @@ double par_reduce(double (*f)(double x, double y), const par_array a, int (*p)(i
 	distribution dist;
 	double result = 0.0;
 
-	par_array res_array = mk_array(NULL, a.m, NUM_THREADS - 1);
+	par_array res_array = mk_array(NULL, a.m, a.m + NUM_THREADS - 1);
 
 	dist = distribute(&a, 1, a.m, a.n);
 
