@@ -7,7 +7,7 @@
 
 pthread_t thrds[NUM_THREADS - 1];
 
-volatile unsigned char barrier_buffer[NUM_THREADS];
+volatile unsigned char barrier_buffer[NUM_THREADS - 1];
 volatile char kill_threads;	// Condition for destroying all active worker threads
 volatile int job_cycle;
 
@@ -16,7 +16,7 @@ instruction global_instruction;
 /* Barrier synchronization called by the master thread */
 void worker_sync(int id) {
 	// The only thing we need to do is flag that this thread is ready to proceed
-	barrier_buffer[id] = 1;
+	barrier_buffer[id-1] = 1;
 }
 
 /* Barrier synchronization called by the master thread */
@@ -25,13 +25,13 @@ void master_sync() {
 
 	do {
 		// Check ready state of all worker threads.
-		for(i=1, sum=1; i<NUM_THREADS; i++) {
+		for(i=0, sum=1; i<NUM_THREADS - 1; i++) {
 			sum += barrier_buffer[i];
 		}
 	} while(sum < NUM_THREADS);
 
 	// Clear ready states
-	for(i=1; i<NUM_THREADS; i++) {
+	for(i=0; i<NUM_THREADS - 1; i++) {
 		barrier_buffer[i] = 0;
 	}
 }
@@ -85,12 +85,12 @@ void init_thread(int id, pthread_t* thread) {
 		exit(1);
 	}
 	
-	barrier_buffer[id] = 0;
+	barrier_buffer[id - 1] = 0;
 }
 
 void init_threadpool() {
-	for(int i = 1; i < NUM_THREADS; i++) {
-		init_thread(i, thrds + i - 1);
+	for(int i = 0; i < NUM_THREADS - 1; i++) {
+		init_thread(i + 1, thrds + i);
 	}
 
 	job_cycle = 0;
@@ -103,7 +103,7 @@ void kill_threadpool() {
 	kill_threads = 1;
 
 	signal_do_instruction();
-	for(int i = 1; i < NUM_THREADS - 1; i++)
+	for(int i = 0; i < NUM_THREADS - 1; i++)
 		pthread_join(thrds[i], NULL);
 }
 
