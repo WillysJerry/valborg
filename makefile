@@ -1,5 +1,5 @@
 CC=gcc
-CFLAGS=-Wall -O3 -g
+CFLAGS=-Wall -O3 -g -DNUM_THREADS=1
 LIB=-lpthread -lm
 
 GLOB_OBJ=obj/runtime.o

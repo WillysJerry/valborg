@@ -4,7 +4,7 @@
 #include "parallel.h"
 #include "../runtime.h"
 
-#define NUM_THREADS 4
+//#define NUM_THREADS 4
 
 // As a starting point, data-parallel operations will only operate on the set of indices that intersect the input arrays. Perhaps we'd want to change this later, but how would we handle indices outside the range of one of the arrays?
 typedef struct _distribution {
