@@ -37,6 +37,8 @@ int par_count(const par_array a, int (*p)(int i, const par_array x, void* cmp), 
 
 par_array par_asn(const par_array a, const par_array b, int (*p)(int i, const par_array lhs, const par_array rhs, void* cmp), void* cmp);
 
+par_array par_replicate(double v, int m, int n, int (*p)(int i, void* cmp), void* cmp);
+
 // Returns a new array where the elements fulfill predicate p, should probably be changed somehow to be more useful.
 //par_array par_mask(int (*p)(double x), par_array a);
 
