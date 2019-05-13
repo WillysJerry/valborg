@@ -241,3 +241,16 @@ par_array seq_asn(const par_array a, const par_array b, int (*p)(int i, const pa
 
 	return res;
 }
+
+par_array seq_replication(double v, int m, int n, int (*p)(int i, void* cmp), void* cmp) {
+	par_array res = mk_array(NULL, m, n);
+
+	for(int i = m; i < n + 1; i++) {
+		if(SATISFIES(p, i, cmp)) {
+			res.a[G2L(res, i)] = SOME(v);
+		} else {
+			res.a[G2L(res, i)] = NONE;
+		}
+	}
+	return res;
+}

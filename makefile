@@ -21,7 +21,7 @@ LIB=-lpthread -lm
 GLOB_OBJ=obj/runtime.o
 SEQ_OBJ=obj/seq_sequential.o
 
-PRIM_OBJ=obj/par_reduce.o obj/par_get.o obj/par_concat.o obj/par_map.o obj/par_count.o obj/par_select.o obj/par_send.o obj/par_scan.o obj/par_asn.o
+PRIM_OBJ=obj/par_reduce.o obj/par_get.o obj/par_concat.o obj/par_map.o obj/par_count.o obj/par_select.o obj/par_send.o obj/par_scan.o obj/par_asn.o obj/par_replicate.o
 
 PTHRD_OBJ=obj/par_tp_pthreads.o obj/par_threading.o obj/par_parallel.o $(PRIM_OBJ)
 LCKLSS_OBJ=obj/par_tp_lockless.o obj/par_threading.o obj/par_parallel.o $(PRIM_OBJ)
@@ -32,7 +32,7 @@ PAR_OBJ=$(LCKLSS_OBJ)
 
 # Probably a good idea to make the "runtime" into a library or something instead of directly linking the object files (mostly because it's annoying and looks ugly, and also because it makes the most sense?)
 
-tests: test_reduce test_communication test_concat test_map test_scan test_asn test_qsort test_abs test_bench
+tests: test_reduce test_communication test_concat test_map test_scan test_asn test_qsort test_abs test_bench algorithm_add
 
 # Prefix all sequential runtime object files with seq_
 obj/seq_%.o: src/runtime/sequential/%.c
@@ -94,6 +94,11 @@ test_abs: $(GLOB_OBJ) $(SEQ_OBJ) $(PAR_OBJ) tests/abs.c
 test_bench: $(GLOB_OBJ) $(SEQ_OBJ) $(PAR_OBJ) tests/bench.c
 	mkdir -p bin
 	$(CC) $(CFLAGS) $^ -o bin/parallel_benchmark $(LIB) 
+
+algorithm_add: $(GLOB_OBJ) $(SEQ_OBJ) $(PAR_OBJ) algorithms/add.c
+	mkdir -p bin
+	mkdir -p bin/algorithms
+	$(CC) $(CFLAGS) $^ -o bin/algorithms/add $(LIB) 
 clean:
 	rm -rf bin/* obj/*
 

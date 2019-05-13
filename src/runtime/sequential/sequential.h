@@ -30,4 +30,6 @@ int seq_count(const par_array a, int (*p)(int i, const par_array x, void* cmp), 
 
 par_array seq_asn(const par_array a, const par_array b, int (*p)(int i, const par_array lhs, const par_array rhs, void* cmp), void* cmp);
 
+par_array seq_replication(double v, int m, int n, int (*p)(int i, void* cmp), void* cmp);
+
 #endif // SEQUENTIAL_H
