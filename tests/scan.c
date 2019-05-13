@@ -14,7 +14,7 @@
 #define T2 3444
 #define T3 63595 
 #define T4 800000
-#define N_TESTS 1
+#define N_TESTS 100
 #define MAX 1000
 
 double sum2(double x, double y) {
@@ -104,7 +104,6 @@ int main(int argc, char** argv) {
 
 	log_benchmark(seq_t, par_t, length(A), "+-scan");
 	//printf("%f %f\ndiff:%f\n", r, r2, fabs(r-r2));
-	return 0;
 
 	printf("#### TEST 2 ####\n");
 	seq_t = 0.0;
@@ -119,6 +118,9 @@ int main(int argc, char** argv) {
 		R2 = seq_scan(sum2, B, gt4, NULL);
 		t1 = get_time_usec();
 		seq_t += get_timediff(t0, t1);
+
+		free(R1.a);
+		free(R2.a);
 	}
 	seq_t /= N_TESTS;
 	par_t /= N_TESTS;
@@ -139,6 +141,9 @@ int main(int argc, char** argv) {
 		R2 = seq_scan(sum2, C, gt4, NULL);
 		t1 = get_time_usec();
 		seq_t += get_timediff(t0, t1);
+
+		free(R1.a);
+		free(R2.a);
 	}
 	seq_t /= N_TESTS;
 	par_t /= N_TESTS;
@@ -159,6 +164,9 @@ int main(int argc, char** argv) {
 		R2 = seq_scan(sum2, D, gt100, NULL);
 		t1 = get_time_usec();
 		seq_t += get_timediff(t0, t1);
+
+		free(R1.a);
+		free(R2.a);
 	}
 	seq_t /= N_TESTS;
 	par_t /= N_TESTS;
