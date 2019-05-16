@@ -3,14 +3,14 @@ CFLAGS=-Wall -O3 -g
 INCLUDE=-I ./lib/runtime/include
 LIB=-lpthread -lm -L./lib/runtime -lvb_par
 
-all: libs tests
+all: libs tests examples
 
 libs:
 	cd lib/runtime && make all && cd ../..
 
-tests: test_asn test_abs test_bench test_communication test_concat test_map test_reduce test_scan algorithms
+tests: test_asn test_abs test_bench test_communication test_concat test_map test_reduce test_scan
 
-algorithms: algorithm_vectorscalarmul algorithm_abs algorithm_dot
+examples: example_vectorscalarmul example_abs example_dot
 
 test_map: tests/map.c 
 	mkdir -p bin
@@ -43,20 +43,20 @@ test_bench: tests/bench.c
 	mkdir -p bin
 	$(CC) $(CFLAGS) $^ -o bin/parallel_benchmark $(LIB) $(INCLUDE)
 
-algorithm_vectorscalarmul: algorithms/vectorscalarmul.c
+example_vectorscalarmul: examples/vectorscalarmul.c
 	mkdir -p bin
-	mkdir -p bin/algorithms
-	$(CC) $(CFLAGS) $^ -o bin/algorithms/vec_sca_mul $(LIB) $(INCLUDE)
+	mkdir -p bin/examples
+	$(CC) $(CFLAGS) $^ -o bin/examples/vec_sca_mul $(LIB) $(INCLUDE)
 
-algorithm_abs: algorithms/abs.c
+example_abs: examples/abs.c
 	mkdir -p bin
-	mkdir -p bin/algorithms
-	$(CC) $(CFLAGS) $^ -o bin/algorithms/abs $(LIB) $(INCLUDE)
+	mkdir -p bin/examples
+	$(CC) $(CFLAGS) $^ -o bin/examples/abs $(LIB) $(INCLUDE)
 
-algorithm_dot: algorithms/dot.c
+example_dot: examples/dot.c
 	mkdir -p bin
-	mkdir -p bin/algorithms
-	$(CC) $(CFLAGS) $^ -o bin/algorithms/dot $(LIB) $(INCLUDE)
+	mkdir -p bin/examples
+	$(CC) $(CFLAGS) $^ -o bin/examples/dot $(LIB) $(INCLUDE)
 clean:
 	rm -rf bin/* obj/*
 
