@@ -3,6 +3,8 @@
 #include <stdlib.h>
 #include <string.h> // For memcpy
 
+void vb_init_par_env() {}
+void vb_destroy_par_env() {}
 
 // 'p' is a pointer to a predicate used to mask out certain elements. For now the values of all masked element will be 0, which may or may not be a problem depending on how we want the out arrays to look. The predicate can also be NULL which makes this function perform a normal get communication.
 // I see two possible ways to tackle masking, either we "squish" the resulting array from masked values, resulting in a smaller array:
@@ -19,7 +21,7 @@
 //     v  v  v  v  v  v
 // B:  3  4  0  5  0  9
 // ------------------
-par_array seq_get(const par_array a, int (*f)(int i), int (*p)(int i, const par_array x, void* cmp), void* cmp) {
+par_array vb_get(const par_array a, int (*f)(int i), int (*p)(int i, const par_array x, void* cmp), void* cmp) {
 	// TODO: A good idea might be to set the bounds (m..n) of the output array dynamically based on the mapping function,
 	// as this might allow for easy shifting of arrays by for instance mapping i->(i+1), which would mean that the output m
 	// should be m+1 and the out n should be n+1 (rather then keeping them the same as the in array). 
@@ -43,7 +45,7 @@ par_array seq_get(const par_array a, int (*f)(int i), int (*p)(int i, const par_
 // This function has side-effects. Possible race condition if f(i) == f(j) for some i and j.
 // Another thing to consider is how the bounds of the two arrays should work together, maybe we only send the elements that are intersecting? For now this is ignored.
 // The source function maps GLOBAL SPACE indices.
-void seq_send(par_array a, int (*f)(int i), const par_array b, int (*p)(int i, const par_array lhs, const par_array rhs, void* cmp), void* cmp) {
+void vb_send(par_array a, int (*f)(int i), const par_array b, int (*p)(int i, const par_array lhs, const par_array rhs, void* cmp), void* cmp) {
 	int i;
 	int dst_i, src_i;
 
@@ -57,7 +59,7 @@ void seq_send(par_array a, int (*f)(int i), const par_array b, int (*p)(int i, c
 	}	
 }
 
-par_array seq_concat(const par_array a, const par_array b) {
+par_array vb_concat(const par_array a, const par_array b) {
 	int len = length(a) + length(b);
 
 	par_array c = mk_array(NULL, a.m, a.m + len - 1);
@@ -67,7 +69,7 @@ par_array seq_concat(const par_array a, const par_array b) {
 	return c;
 }
 
-par_array seq_select(const par_array a, int m, int n, int (*p)(int i, const par_array x, void* cmp), void* cmp) {
+par_array vb_select(const par_array a, int m, int n, int (*p)(int i, const par_array x, void* cmp), void* cmp) {
 	par_array res = mk_array(NULL, m, n);
 
 	for(int i = m; i < n + 1; i++) {
@@ -80,7 +82,7 @@ par_array seq_select(const par_array a, int m, int n, int (*p)(int i, const par_
 	return res;
 }
 
-par_array seq_map1(double (*f)(double x), const par_array a, int (*p)(int i, const par_array x, void* cmp), void* cmp) {
+par_array vb_map1(double (*f)(double x), const par_array a, int (*p)(int i, const par_array x, void* cmp), void* cmp) {
 	int i, j;
 	par_array arr = mk_array(NULL, a.m, a.n);
 
@@ -103,7 +105,7 @@ par_array seq_map1(double (*f)(double x), const par_array a, int (*p)(int i, con
 }
 
 // How to handle these (map2, map3)? Should arrays of different sizes be allowed? Also how will it work with index bounds?
-par_array seq_map2(double (*f)(double x, double y), const par_array a, const par_array b, int (*p)(int i, const par_array x, const par_array y, void* cmp), void* cmp) {
+par_array vb_map2(double (*f)(double x, double y), const par_array a, const par_array b, int (*p)(int i, const par_array x, const par_array y, void* cmp), void* cmp) {
 	int i, j;
 	const par_array arrs[] = {a, b};
 	bounds rng = intersection( arrs, 2 );
@@ -131,7 +133,7 @@ par_array seq_map2(double (*f)(double x, double y), const par_array a, const par
 	return arr;
 }
 
-par_array seq_map3(double (*f)(double x, double y, double z), const par_array a, const par_array b, const par_array c, int (*p)(int i, const par_array x, const par_array y, const par_array z, void* cmp), void* cmp) {
+par_array vb_map3(double (*f)(double x, double y, double z), const par_array a, const par_array b, const par_array c, int (*p)(int i, const par_array x, const par_array y, const par_array z, void* cmp), void* cmp) {
 	int i, j;
 	const par_array arrs[] = {a, b, c};
 	bounds rng = intersection( arrs, 3 );
@@ -161,7 +163,7 @@ par_array seq_map3(double (*f)(double x, double y, double z), const par_array a,
 }
 
 // Sequential reduce and scan are basically linear pairwise applications of the function f over the input array
-double seq_reduce(double (*f)(double x, double y), const par_array a, int (*p)(int i, const par_array x, void* cmp), void* cmp) {
+double vb_reduce(double (*f)(double x, double y), const par_array a, int (*p)(int i, const par_array x, void* cmp), void* cmp) {
 	int i;
 	double res = 0.0;
 	for(i = 0; i < length(a); i++) {
@@ -184,7 +186,7 @@ double seq_reduce(double (*f)(double x, double y), const par_array a, int (*p)(i
 	return res;
 }
 
-par_array seq_scan(double (*f)(double x, double y), const par_array a, int(*p)(int i, const par_array x, void* cmp), void* cmp) {
+par_array vb_scan(double (*f)(double x, double y), const par_array a, int(*p)(int i, const par_array x, void* cmp), void* cmp) {
 	int i;
 	par_array arr = mk_array(NULL, a.m, a.n);
 	double acc = 0.0;
@@ -214,7 +216,7 @@ par_array seq_scan(double (*f)(double x, double y), const par_array a, int(*p)(i
 	return arr;
 }
 
-int seq_count(const par_array a, int (*p)(int i, const par_array x, void* cmp), void* cmp) {
+int vb_count(const par_array a, int (*p)(int i, const par_array x, void* cmp), void* cmp) {
 	int c = 0;
 	for(int i = 0; i < length(a); i++) {
 		if(IS_SOME(a.a[i]) && SATISFIES(p, i, a, cmp)) {
@@ -225,7 +227,7 @@ int seq_count(const par_array a, int (*p)(int i, const par_array x, void* cmp), 
 	return c;
 }
 
-par_array seq_asn(const par_array a, const par_array b, int (*p)(int i, const par_array lhs, const par_array rhs, void* cmp), void* cmp) {
+par_array vb_asn(const par_array a, const par_array b, int (*p)(int i, const par_array lhs, const par_array rhs, void* cmp), void* cmp) {
 	if(a.m != b.m || a.n != b.n) {
 		return mk_array(NULL, 0, -1);
 	}
@@ -242,7 +244,7 @@ par_array seq_asn(const par_array a, const par_array b, int (*p)(int i, const pa
 	return res;
 }
 
-par_array seq_replication(double v, int m, int n, int (*p)(int i, void* cmp), void* cmp) {
+par_array vb_replicate(double v, int m, int n, int (*p)(int i, void* cmp), void* cmp) {
 	par_array res = mk_array(NULL, m, n);
 
 	for(int i = m; i < n + 1; i++) {

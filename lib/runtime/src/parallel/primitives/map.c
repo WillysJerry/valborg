@@ -117,7 +117,7 @@ void map3_thrd(distribution dist, int id, par_array* out, void* f, void* p, void
 /*
  * Global-view map functions
  */
-par_array par_map1(double (*f)(double x), const par_array a, int (*p)(int i, par_array x, void* cmp), void* cmp) {
+par_array vb_map1(double (*f)(double x), const par_array a, int (*p)(int i, par_array x, void* cmp), void* cmp) {
 
 	par_array arrs[] = { a };
 	distribution dist = distribute(arrs, 1, a.m, a.n);
@@ -131,7 +131,7 @@ par_array par_map1(double (*f)(double x), const par_array a, int (*p)(int i, par
 
 }
 
-par_array par_map2(double (*f)(double x, double y), const par_array a, const par_array b, int (*p)(int i, par_array x, par_array y, void* cmp), void* cmp) {
+par_array vb_map2(double (*f)(double x, double y), const par_array a, const par_array b, int (*p)(int i, par_array x, par_array y, void* cmp), void* cmp) {
 	par_array result;
 	par_array arrs[] = { a, b };
 	bounds bound = intersection(arrs, 2);
@@ -148,7 +148,7 @@ par_array par_map2(double (*f)(double x, double y), const par_array a, const par
 
 }
 
-par_array par_map3(double (*f)(double x, double y, double z), const par_array a, const par_array b, const par_array c, int (*p)(int i, par_array x, par_array y, par_array z, void* cmp), void* cmp) {
+par_array vb_map3(double (*f)(double x, double y, double z), const par_array a, const par_array b, const par_array c, int (*p)(int i, par_array x, par_array y, par_array z, void* cmp), void* cmp) {
 
 	par_array arrs[] = { a, b, c };
 	bounds bound = intersection(arrs, 3);

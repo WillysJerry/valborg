@@ -24,7 +24,7 @@ void concat_thrd(distribution dist, int id, par_array* out, void* f, void* p, vo
 	}
 }
 
-par_array par_concat(const par_array a, const par_array b) {
+par_array vb_concat(const par_array a, const par_array b) {
 	distribution dist;
 
 	int res_size = length(a) + length(b);

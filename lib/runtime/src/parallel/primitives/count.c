@@ -28,7 +28,7 @@ void count_thrd(distribution dist, int id, par_array* out, void* f, void* p, voi
 	out->a[id] = SOME((double)cnt);
 }
 
-int par_count(const par_array a, int (*p)(int i, par_array x, void* cmp), void* cmp) {
+int vb_count(const par_array a, int (*p)(int i, par_array x, void* cmp), void* cmp) {
 	distribution dist;
 	par_array res_array = mk_array(NULL, 0, NUM_THREADS-1);
 	int result;

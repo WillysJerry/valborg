@@ -4,9 +4,7 @@
 #include <assert.h>
 #include <time.h>
 
-#include "../src/runtime/sequential/sequential.h"
-#include "../src/runtime/parallel/parallel.h"
-#include "../src/runtime/runtime.h"
+#include <runtime.h>
 #include "benchmark.h"
 
 #define EPSILON 0.01
@@ -30,7 +28,7 @@ double par_abs(par_array in) {
 	par_t = 0.0;
 	for(int i = 0; i < N_TESTS; i++) {
 		t0 = get_time_usec();
-		R1 = par_map1(neg_if_neg, in, NULL, NULL);
+		R1 = vb_map1(neg_if_neg, in, NULL, NULL);
 		t1 = get_time_usec();
 		par_t += get_timediff(t0, t1);
 
@@ -87,9 +85,9 @@ int main(int argc, char** argv) {
 	double seq_t, par_t;
 
 	seq_t = seq_abs(A);
-	init_par_env();
+	vb_init_par_env();
 		par_t = par_abs(A);
-	destroy_par_env();
+	vb_destroy_par_env();
 	log_benchmark(seq_t, par_t, T1, "abs");
 
 	return 0;

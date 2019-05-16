@@ -79,7 +79,7 @@ void scan2_thrd(distribution dist, int id, par_array* out, void* f, void* p, voi
 	}
 }
 
-par_array par_scan(double (*f)(double x, double y), const par_array a, int (*p)(int i, par_array x, void* cmp), void* cmp) {
+par_array vb_scan(double (*f)(double x, double y), const par_array a, int (*p)(int i, par_array x, void* cmp), void* cmp) {
 	distribution dist;
 	par_array work_arrays[2];
 

@@ -4,9 +4,7 @@
 #include <assert.h>
 #include <time.h>
 
-#include "../src/runtime/sequential/sequential.h"
-#include "../src/runtime/parallel/parallel.h"
-#include "../src/runtime/runtime.h"
+#include <runtime.h>
 #include "benchmark.h"
 
 #define EPSILON 0.0001
@@ -14,7 +12,7 @@
 #define T2 624410 
 #define T3 63595 
 #define T4 800000
-#define N_TESTS 1000
+#define N_TESTS 100
 #define MAX 10
 
 
@@ -37,30 +35,28 @@ int main(int argc, char** argv) {
 	const par_array A = mk_array(arr1, 0, T1-1);
 	const par_array B = mk_array(arr2, 0, T2-1);
 
-	init_par_env();
+	vb_init_par_env();
 
 	printf("#### TEST 1 ####\n");
 	seq_t = 0.0;
 	par_t = 0.0;
 	for(int i = 0; i < N_TESTS; i++) {
 		t0 = get_time_usec();
-		R1 = par_concat(A, B);
+		R1 = vb_concat(A, B);
 		t1 = get_time_usec();
 		par_t += get_timediff(t0, t1);
 
 		t0 = get_time_usec();
-		R2 = seq_concat(A, B);
+		int j;
+		R2 = mk_array(NULL, A.m, A.m + length(A) + length(B) - 1);
+		for(j = A.m; j < A.m + length(A); j++) {
+			R2.a[G2L(R2, j)] = A.a[G2L(A, j)];
+		}
+		for(; j < A.m + length(A) + length(B); j++) {
+			R2.a[G2L(R2, j)] = B.a[G2L(B, j - length(A))];
+		}
 		t1 = get_time_usec();
 		seq_t += get_timediff(t0, t1);
-
-		/*
-		for(k = 0; k < length(A); k++) {
-			printf("A: %.1f, %.1f, %.1f\n", VAL(A.a[k]), VAL(R1.a[k]), VAL(R2.a[k]));
-		}
-		for(k += 1; k < length(A) + length(B); k++) {
-			printf("B: %.1f, %.1f, %.1f\n", VAL(B.a[k - length(A)]), VAL(R1.a[k]), VAL(R2.a[k]));
-
-		}*/
 
 		for(k = 0; k < length(A); k++) {
 			assert(fabs(VAL(R1.a[k]) - VAL(A.a[k])) <= EPSILON);
@@ -79,6 +75,6 @@ int main(int argc, char** argv) {
 
 	log_benchmark(seq_t, par_t, length(A) + length(B), "concat");
 
-	destroy_par_env();
+	vb_destroy_par_env();
 	return 0;
 }

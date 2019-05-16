@@ -4,16 +4,11 @@
 #include <assert.h>
 #include <time.h>
 
-#include "../src/runtime/sequential/sequential.h"
-#include "../src/runtime/parallel/parallel.h"
-#include "../src/runtime/runtime.h"
+#include <runtime.h>
 #include "benchmark.h"
 
 #define EPSILON 0.01
-#define T1 100 
-#define T2 62441 
-#define T3 63595 
-#define T4 800000
+#define T1 100000
 #define N_TESTS 100
 #define MAX 10
 
@@ -50,69 +45,69 @@ int main(int argc, char** argv) {
 	par_array A = mk_array(arr0, 0, T1-1);
 	par_array R;
 
-	init_par_env();
+	vb_init_par_env();
 
 	for(int i = 0; i < N_TESTS; i++) {
 
 		t0 = get_time_usec();
-		R = par_get(A, dst, NULL, NULL);
+		R = vb_get(A, dst, NULL, NULL);
 		t1 = get_time_usec();
 		get += get_timediff(t0, t1);
 
 		t0 = get_time_usec();
-		par_send(R, src, A, NULL, NULL);
+		vb_send(R, src, A, NULL, NULL);
 		t1 = get_time_usec();
 		send += get_timediff(t0, t1);
 		free(R.a);
 
 		t0 = get_time_usec();
-		R = par_concat(A, A);
+		R = vb_concat(A, A);
 		t1 = get_time_usec();
 		concat += get_timediff(t0, t1);
 		free(R.a);
 
 		t0 = get_time_usec();
-		R = par_select(A, 0, T1-5, NULL, NULL);
+		R = vb_select(A, 0, T1-5, NULL, NULL);
 		t1 = get_time_usec();
 		select += get_timediff(t0, t1);
 		free(R.a);
 
 		t0 = get_time_usec();
-		R = par_map1(neg, A, NULL, NULL);
+		R = vb_map1(neg, A, NULL, NULL);
 		t1 = get_time_usec();
 		map1 += get_timediff(t0, t1);
 		free(R.a);
 
 		t0 = get_time_usec();
-		R = par_map2(sum2, A, A, NULL, NULL);
+		R = vb_map2(sum2, A, A, NULL, NULL);
 		t1 = get_time_usec();
 		map2 += get_timediff(t0, t1);
 		free(R.a);
 
 		t0 = get_time_usec();
-		R = par_map3(mul3, A, A, A, NULL, NULL);
+		R = vb_map3(mul3, A, A, A, NULL, NULL);
 		t1 = get_time_usec();
 		map3 += get_timediff(t0, t1);
 		free(R.a);
 
 		t0 = get_time_usec();
-		s = par_reduce(sum2, A, NULL, NULL);
+		s = vb_reduce(sum2, A, NULL, NULL);
 		t1 = get_time_usec();
 		reduce += get_timediff(t0, t1);
 
 		t0 = get_time_usec();
-		R = par_scan(sum2, A, NULL, NULL);
+		R = vb_scan(sum2, A, NULL, NULL);
 		t1 = get_time_usec();
 		scan += get_timediff(t0, t1);
 		free(R.a);
 
 		t0 = get_time_usec();
-		cnt = par_count(A, NULL, NULL);
+		cnt = vb_count(A, NULL, NULL);
 		t1 = get_time_usec();
 		count += get_timediff(t0, t1);
 
 		t0 = get_time_usec();
-		R = par_asn(A, A, NULL, NULL);
+		R = vb_asn(A, A, NULL, NULL);
 		t1 = get_time_usec();
 		asn += get_timediff(t0, t1);
 		free(R.a);
@@ -132,7 +127,7 @@ int main(int argc, char** argv) {
 
 	printf("get: %.1f\nsend: %.1f\nconcat: %.1f\nselect: %.1f\nmap1: %.1f\nmap2: %.1f\nmap3: %.1f\nreduce: %.1f\nscan: %.1f\ncount: %.1f\nasn: %.1f\n", get, send, concat, select, map1, map2, map3, reduce, scan, count, asn);
 
-	destroy_par_env();
+	vb_destroy_par_env();
 
 	return 0;
 }

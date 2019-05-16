@@ -29,7 +29,7 @@ void get_thrd(distribution dist, int id, par_array* out, void* f, void* p, void*
 	}
 }
 
-par_array par_get(const par_array a, int (*f)(int i), int (*p)(int i, par_array x, void* cmp), void* cmp) {
+par_array vb_get(const par_array a, int (*f)(int i), int (*p)(int i, par_array x, void* cmp), void* cmp) {
 	distribution dist;
 	par_array res_array = mk_array(NULL, a.m, a.n);
 

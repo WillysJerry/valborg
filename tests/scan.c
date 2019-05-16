@@ -4,9 +4,7 @@
 #include <assert.h>
 #include <time.h>
 
-#include "../src/runtime/sequential/sequential.h"
-#include "../src/runtime/parallel/parallel.h"
-#include "../src/runtime/runtime.h"
+#include <runtime.h>
 #include "benchmark.h"
 
 #define EPSILON 0.0001
@@ -47,7 +45,7 @@ int main(int argc, char** argv) {
 	int k;
 
 	srand(time(0));
-	init_par_env();
+	vb_init_par_env();
 
 	// "Never repeat yourself"
 	for(int i = 0; i < T1; i++) {
@@ -69,8 +67,16 @@ int main(int argc, char** argv) {
 	const par_array D = mk_array(arr4, 0, T4-1);
 
 	printf("Initial test...\n");
-	R1 = par_scan(sum2, S, NULL, NULL);
-	R2 = seq_scan(sum2, S, NULL, NULL);
+	R1 = vb_scan(sum2, S, NULL, NULL);
+
+	R2 = mk_array(NULL, S.m, S.n);
+	double acc = VAL(ELEM(S, S.m));
+	R2.a[G2L(R2, S.m)] = SOME(acc);
+	for(int i = R2.m + 1; i < R2.m + length(R2); i++) {
+		acc = sum2(acc, VAL(S.a[G2L(S, i)]));
+		R2.a[G2L(R2, i)] = SOME(acc);
+	}
+
 	for(int i = 0; i < length(S); i++) {
 		printf("P:%.1f S:%.1f\n", VAL(R1.a[i]), VAL(R2.a[i]));
 
@@ -83,12 +89,18 @@ int main(int argc, char** argv) {
 	par_t = 0.0;
 	for(int i = 0; i < N_TESTS; i++) {
 		t0 = get_time_usec();
-		R1 = par_scan(sum2, A, NULL, NULL);
+		R1 = vb_scan(sum2, A, NULL, NULL);
 		t1 = get_time_usec();
 		par_t += get_timediff(t0, t1);
 
 		t0 = get_time_usec();
-		R2 = seq_scan(sum2, A, NULL, NULL);
+		R2 = mk_array(NULL, A.m, A.n);
+		acc = VAL(ELEM(A, A.m));
+		R2.a[G2L(R2, A.m)] = SOME(acc);
+		for(int j = R2.m + 1; j < R2.m + length(R2); j++) {
+			acc = sum2(acc, VAL(A.a[G2L(A, j)]));
+			R2.a[G2L(R2, j)] = SOME(acc);
+		}
 		t1 = get_time_usec();
 		seq_t += get_timediff(t0, t1);
 
@@ -110,12 +122,18 @@ int main(int argc, char** argv) {
 	par_t = 0.0;
 	for(int i = 0; i < N_TESTS; i++) {
 		t0 = get_time_usec();
-		R1 = par_scan(sum2, B, gt4, NULL);
+		R1 = vb_scan(sum2, B, NULL, NULL);
 		t1 = get_time_usec();
 		par_t += get_timediff(t0, t1);
 
 		t0 = get_time_usec();
-		R2 = seq_scan(sum2, B, gt4, NULL);
+		R2 = mk_array(NULL, B.m, B.n);
+		acc = VAL(ELEM(B, B.m));
+		R2.a[G2L(R2, B.m)] = SOME(acc);
+		for(int j = R2.m + 1; j < R2.m + length(R2); j++) {
+			acc = sum2(acc, VAL(B.a[G2L(B, j)]));
+			R2.a[G2L(R2, j)] = SOME(acc);
+		}
 		t1 = get_time_usec();
 		seq_t += get_timediff(t0, t1);
 
@@ -125,7 +143,7 @@ int main(int argc, char** argv) {
 	seq_t /= N_TESTS;
 	par_t /= N_TESTS;
 
-	log_benchmark(seq_t, par_t, T2, "+-reduce");
+	log_benchmark(seq_t, par_t, T2, "+-scan");
 	//printf("%f %f\ndiff:%f\n", r, r2, fabs(r-r2));
 
 	printf("#### TEST 3 ####\n");
@@ -133,12 +151,18 @@ int main(int argc, char** argv) {
 	par_t = 0.0;
 	for(int i = 0; i < N_TESTS; i++) {
 		t0 = get_time_usec();
-		R1 = par_scan(sum2, C, gt4, NULL);
+		R1 = vb_scan(sum2, C, gt4, NULL);
 		t1 = get_time_usec();
 		par_t += get_timediff(t0, t1);
 
 		t0 = get_time_usec();
-		R2 = seq_scan(sum2, C, gt4, NULL);
+		R2 = mk_array(NULL, C.m, C.n);
+		acc = VAL(ELEM(C, C.m));
+		R2.a[G2L(R2, C.m)] = SOME(acc);
+		for(int j = R2.m + 1; j < R2.m + length(R2); j++) {
+			acc = sum2(acc, VAL(C.a[G2L(C, j)]));
+			R2.a[G2L(R2, j)] = SOME(acc);
+		}
 		t1 = get_time_usec();
 		seq_t += get_timediff(t0, t1);
 
@@ -148,7 +172,7 @@ int main(int argc, char** argv) {
 	seq_t /= N_TESTS;
 	par_t /= N_TESTS;
 
-	log_benchmark(seq_t, par_t, T3, "+-reduce");
+	log_benchmark(seq_t, par_t, T3, "+-scan");
 	//printf("%f %f\ndiff:%f\n", r, r2, fabs(r-r2));
 
 	printf("#### TEST 4 ####\n");
@@ -156,12 +180,18 @@ int main(int argc, char** argv) {
 	par_t = 0.0;
 	for(int i = 0; i < N_TESTS; i++) {
 		t0 = get_time_usec();
-		R1 = par_scan(sum2, D, gt100, NULL);
+		R1 = vb_scan(sum2, D, NULL, NULL);
 		t1 = get_time_usec();
 		par_t += get_timediff(t0, t1);
 
 		t0 = get_time_usec();
-		R2 = seq_scan(sum2, D, gt100, NULL);
+		R2 = mk_array(NULL, D.m, D.n);
+		acc = VAL(ELEM(D, D.m));
+		R2.a[G2L(R2, D.m)] = SOME(acc);
+		for(int j = R2.m + 1; j < R2.m + length(R2); j++) {
+			acc = sum2(acc, VAL(D.a[G2L(D, j)]));
+			R2.a[G2L(R2, j)] = SOME(acc);
+		}
 		t1 = get_time_usec();
 		seq_t += get_timediff(t0, t1);
 
@@ -171,8 +201,8 @@ int main(int argc, char** argv) {
 	seq_t /= N_TESTS;
 	par_t /= N_TESTS;
 
-	log_benchmark(seq_t, par_t, T4, "+-reduce");
+	log_benchmark(seq_t, par_t, T4, "+-scan");
 	//printf("%f %f\ndiff:%f\n", r, r2, fabs(r-r2));
-	destroy_par_env();
+	vb_destroy_par_env();
 	return 0;
 }

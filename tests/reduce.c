@@ -4,9 +4,7 @@
 #include <assert.h>
 #include <time.h>
 
-#include "../src/runtime/sequential/sequential.h"
-#include "../src/runtime/parallel/parallel.h"
-#include "../src/runtime/runtime.h"
+#include <runtime.h>
 #include "benchmark.h"
 
 #define EPSILON 0.0001
@@ -45,7 +43,7 @@ int main(int argc, char** argv) {
 	double arr4[T4];
 
 	srand(time(0));
-	init_par_env();
+	vb_init_par_env();
 
 	// "Never repeat yourself"
 	for(int i = 0; i < T1; i++) {
@@ -67,8 +65,12 @@ int main(int argc, char** argv) {
 	const par_array D = mk_array(arr4, 0, T4-1);
 
 	printf("Initial test...\n");
-	r = par_reduce(sum2, S, gt4, NULL);
-	r2 = seq_reduce(sum2, S, gt4, NULL);
+	r = vb_reduce(sum2, S, NULL, NULL);
+	
+	r2 = 0.0;
+	for(int i = 0; i < length(S); i++) {
+		r2 = sum2(r2, VAL(S.a[i]));	
+	}
 	printf("%f %f\ndiff:%f\n", r, r2, fabs(r-r2));
 
 	printf("#### TEST 1 ####\n");
@@ -76,12 +78,16 @@ int main(int argc, char** argv) {
 	par_t = 0.0;
 	for(int i = 0; i < N_TESTS; i++) {
 		t0 = get_time_usec();
-		r = par_reduce(sum2, A, gt4, NULL);
+		r = vb_reduce(sum2, A, gt4, NULL);
 		t1 = get_time_usec();
 		par_t += get_timediff(t0, t1);
 
 		t0 = get_time_usec();
-		r2 = seq_reduce(sum2, A, gt4, NULL);
+		r2 = 0.0;
+		for(int j = A.m; j < A.m + length(A); j++) {
+			if(VAL(A.a[G2L(A, j)]) > 4.0)
+				r2 = sum2(r2, VAL(A.a[G2L(A, j)]));
+		}
 		t1 = get_time_usec();
 		seq_t += get_timediff(t0, t1);
 		if(fabs(r - r2) > EPSILON) {
@@ -101,12 +107,16 @@ int main(int argc, char** argv) {
 	par_t = 0.0;
 	for(int i = 0; i < N_TESTS; i++) {
 		t0 = get_time_usec();
-		r = par_reduce(sum2, B, gt4, NULL);
+		r = vb_reduce(sum2, B, gt4, NULL);
 		t1 = get_time_usec();
 		par_t += get_timediff(t0, t1);
 
 		t0 = get_time_usec();
-		r2 = seq_reduce(sum2, B, gt4, NULL);
+		r2 = 0.0;
+		for(int j = B.m; j < B.m + length(B); j++) {
+			if(VAL(B.a[G2L(B, j)]) > 4.0)
+				r2 = sum2(r2, VAL(B.a[G2L(B, j)]));
+		}
 		t1 = get_time_usec();
 		seq_t += get_timediff(t0, t1);
 		assert(fabs(r - r2) <= EPSILON);
@@ -122,12 +132,16 @@ int main(int argc, char** argv) {
 	par_t = 0.0;
 	for(int i = 0; i < N_TESTS; i++) {
 		t0 = get_time_usec();
-		r = par_reduce(sum2, C, gt4, NULL);
+		r = vb_reduce(sum2, C, gt4, NULL);
 		t1 = get_time_usec();
 		par_t += get_timediff(t0, t1);
 
 		t0 = get_time_usec();
-		r2 = seq_reduce(sum2, C, gt4, NULL);
+		r2 = 0.0;
+		for(int j = C.m; j < C.m + length(C); j++) {
+			if(VAL(C.a[G2L(C, j)]) > 4.0)
+				r2 = sum2(r2, VAL(C.a[G2L(C, j)]));
+		}
 		t1 = get_time_usec();
 		seq_t += get_timediff(t0, t1);
 		assert(fabs(r - r2) <= EPSILON);
@@ -143,12 +157,16 @@ int main(int argc, char** argv) {
 	par_t = 0.0;
 	for(int i = 0; i < N_TESTS; i++) {
 		t0 = get_time_usec();
-		r = par_reduce(sum2, D, gt100, NULL);
+		r = vb_reduce(sum2, D, gt100, NULL);
 		t1 = get_time_usec();
 		par_t += get_timediff(t0, t1);
 
 		t0 = get_time_usec();
-		r2 = seq_reduce(sum2, D, gt100, NULL);
+		r2 = 0.0;
+		for(int j = D.m; j < D.m + length(D); j++) {
+			if(VAL(D.a[G2L(D, j)]) > 100.0)
+				r2 = sum2(r2, VAL(D.a[G2L(D, j)]));
+		}
 		t1 = get_time_usec();
 		seq_t += get_timediff(t0, t1);
 		assert(fabs(r - r2) <= EPSILON);
@@ -158,6 +176,6 @@ int main(int argc, char** argv) {
 
 	log_benchmark(seq_t, par_t, T4, "+-reduce");
 	//printf("%f %f\ndiff:%f\n", r, r2, fabs(r-r2));
-	destroy_par_env();
+	vb_destroy_par_env();
 	return 0;
 }

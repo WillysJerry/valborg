@@ -23,7 +23,7 @@ void select_thrd(distribution dist, int id, par_array* out, void* f, void* p, vo
 	}
 }
 
-par_array par_select(const par_array a, int m, int n, int (*p)(int i, const par_array x, void* cmp), void* cmp) {
+par_array vb_select(const par_array a, int m, int n, int (*p)(int i, const par_array x, void* cmp), void* cmp) {
 	distribution dist;
 	par_array res_array = mk_array(NULL, m, n);
 

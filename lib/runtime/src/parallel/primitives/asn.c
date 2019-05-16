@@ -25,7 +25,7 @@ void asn_thrd(distribution dist, int id, par_array* out, void* f, void* p, void*
 	}
 }
 
-par_array par_asn(const par_array a, const par_array b, int (*p)(int i, par_array lhs, par_array rhs, void* cmp), void* cmp) {
+par_array vb_asn(const par_array a, const par_array b, int (*p)(int i, par_array lhs, par_array rhs, void* cmp), void* cmp) {
 
 	par_array arrs[] = {a, b};
 	if(a.m != b.m || a.n != b.n) {

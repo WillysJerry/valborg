@@ -13,8 +13,7 @@
 #include <assert.h>
 #include <time.h>
 
-#include "../src/runtime/parallel/parallel.h"
-#include "../src/runtime/runtime.h"
+#include <runtime.h>
 
 int same(int i) {
 	return i;
@@ -26,12 +25,12 @@ int main(int argc, char** argv) {
 
 	par_array A = mk_array(arr0, 0, 4);
 
-	init_par_env();
+	vb_init_par_env();
 		// Apply fabs (abs for floating point values) elementwise on every element in A
-		par_array B = par_map1(fabs, A, NULL, NULL);
+		par_array B = vb_map1(fabs, A, NULL, NULL);
 		// Send the result back to A
-		par_send(A, same, B, NULL, NULL);
-	destroy_par_env();
+		vb_send(A, same, B, NULL, NULL);
+	vb_destroy_par_env();
 
 	for(int i = 0; i < length(A); i++) {
 		printf("%.2f ", VAL(A.a[i])); 

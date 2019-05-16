@@ -13,9 +13,7 @@
 #include <assert.h>
 #include <time.h>
 
-#include "../src/runtime/sequential/sequential.h"
-#include "../src/runtime/parallel/parallel.h"
-#include "../src/runtime/runtime.h"
+#include <runtime.h>
 
 int repl_is_odd(int i, void* cmp) {
 	return i % 2 == 1;
@@ -36,14 +34,14 @@ int same(int i) {
 int main(int argc, char** argv) {
 	double arr0[5] = {1.0, 2.0, 3.0, 4.0, 5.0};
 	par_array A = mk_array(arr0, 0, 4);
-	init_par_env();
+	vb_init_par_env();
 		// Replicate the scalar value to an array of the same size as A
-		par_array B = par_replicate(5.0, A.m, A.n, repl_is_odd, NULL);
+		par_array B = vb_replicate(5.0, A.m, A.n, repl_is_odd, NULL);
 		// Perform an elementwise multiplication of A and the replicated array
-		par_array C = par_map2(mul2, A, B, NULL, NULL);
+		par_array C = vb_map2(mul2, A, B, NULL, NULL);
 		// Send the results back to A
-		par_send(A, same, C, send_is_odd, NULL);
-	destroy_par_env();
+		vb_send(A, same, C, send_is_odd, NULL);
+	vb_destroy_par_env();
 
 	for(int i = 0; i < length(A); i++) {
 		printf("%.2f ", VAL(A.a[i])); 

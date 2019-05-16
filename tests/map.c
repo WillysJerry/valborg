@@ -4,14 +4,12 @@
 #include <assert.h>
 #include <time.h>
 
-#include "../src/runtime/sequential/sequential.h"
-#include "../src/runtime/parallel/parallel.h"
-#include "../src/runtime/runtime.h"
+#include <runtime.h>
 #include "benchmark.h"
 
 #define EPSILON 0.0001
 #define T1 800000
-#define T2 80000 
+#define T2 80000
 #define T3 80000 
 #define T4 800
 #define N_TESTS 100
@@ -73,9 +71,9 @@ int main(int argc, char** argv) {
 	const par_array G = mk_array(arr6, 0, T3-1);
 
 
-	init_par_env();
+	vb_init_par_env();
 
-	R1 = par_map1(square, A, NULL, NULL);
+	R1 = vb_map1(square, A, NULL, NULL);
 	printf("Square A:\n");
 	for(int i = 0; i < length(R1); i++) {
 		printf("%f ", VAL(R1.a[i]));
@@ -83,34 +81,39 @@ int main(int argc, char** argv) {
 	free(R1.a);
 
 	printf("\nSum A B:\n");
-	R1 = par_map2(sum2, A, B, x_lt2, NULL);
+	R1 = vb_map2(sum2, A, B, x_lt2, NULL);
 	for(int i = 0; i < length(R1); i++) {
 		printf("%f ", VAL(R1.a[i]));
 	}
 	free(R1.a);
 
 	printf("\nMul A B C:\n");
-	R1 = par_map3(mul3, A, B, C, NULL, NULL);
+	R1 = vb_map3(mul3, A, B, C, NULL, NULL);
 	for(int i = 0; i < length(R1); i++) {
 		printf("%f ", VAL(R1.a[i]));
 	}
 	free(R1.a);
 
-	R1 = par_map1(neg, D, is_neg, NULL);
-	printf("Abs D:\n");
+	R1 = vb_map1(neg, D, is_neg, NULL);
+	printf("\nAbs D:\n");
 	for(int i = 0; i < length(R1); i++) {
 		printf("%f ", VAL(R1.a[i]));
 	}
 	free(R1.a);
+
+	printf("\nTESTS:\n");
 
 	for(int i = 0; i < N_TESTS; i++) {
 		t0 = get_time_usec();
-		R1 = par_map1(square, E, NULL, NULL);
+		R1 = vb_map1(square, E, NULL, NULL);
 		t1 = get_time_usec();
 		par_t += get_timediff(t0, t1);
 
 		t0 = get_time_usec();
-		R2 = seq_map1(square, E, NULL, NULL);
+		R2 = mk_array(NULL, E.m, E.n);
+		for(int j = R2.m; j < R2.m + length(R2); j++) {
+			R2.a[G2L(R2, j)] = SOME(square(VAL(E.a[G2L(E, j)])));
+		}
 		t1 = get_time_usec();
 		seq_t += get_timediff(t0, t1);
 
@@ -128,12 +131,15 @@ int main(int argc, char** argv) {
 
 	for(int i = 0; i < N_TESTS; i++) {
 		t0 = get_time_usec();
-		R1 = par_map2(sum2, F, F, NULL, NULL);
+		R1 = vb_map2(sum2, F, F, NULL, NULL);
 		t1 = get_time_usec();
 		par_t += get_timediff(t0, t1);
 
 		t0 = get_time_usec();
-		R2 = seq_map2(sum2, F, F, NULL, NULL);
+		R2 = mk_array(NULL, F.m, F.n);
+		for(int j = R2.m; j < R2.m + length(R2); j++) {
+			R2.a[G2L(R2, j)] = SOME(sum2(VAL(F.a[G2L(F, j)]), VAL(F.a[G2L(F, j)])));
+		}
 		t1 = get_time_usec();
 		seq_t += get_timediff(t0, t1);
 
@@ -151,12 +157,15 @@ int main(int argc, char** argv) {
 
 	for(int i = 0; i < N_TESTS; i++) {
 		t0 = get_time_usec();
-		R1 = par_map3(mul3, G, G, G, NULL, NULL);
+		R1 = vb_map3(mul3, G, G, G, NULL, NULL);
 		t1 = get_time_usec();
 		par_t += get_timediff(t0, t1);
 
 		t0 = get_time_usec();
-		R2 = seq_map3(mul3, G, G, G, NULL, NULL);
+		R2 = mk_array(NULL, G.m, G.n);
+		for(int j = R2.m; j < R2.m + length(R2); j++) {
+			R2.a[G2L(R2, j)] = SOME(mul3(VAL(G.a[G2L(G, j)]), VAL(G.a[G2L(G, j)]), VAL(G.a[G2L(G, j)])));
+		}
 		t1 = get_time_usec();
 		seq_t += get_timediff(t0, t1);
 
@@ -172,6 +181,6 @@ int main(int argc, char** argv) {
 
 	log_benchmark(seq_t, par_t, T3, "map3");
 	printf("\n");
-	destroy_par_env();
+	vb_destroy_par_env();
 	return 0;
 }

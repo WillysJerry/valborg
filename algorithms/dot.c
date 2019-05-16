@@ -18,8 +18,7 @@
 #include <assert.h>
 #include <time.h>
 
-#include "../src/runtime/parallel/parallel.h"
-#include "../src/runtime/runtime.h"
+#include <runtime.h>
 
 double mul2(double x, double y) {
 	return x * y;
@@ -38,12 +37,12 @@ int main(int argc, char** argv) {
 	par_array A = mk_array(arr0, 0, 4);
 	par_array B = mk_array(arr1, 0, 4);
 
-	init_par_env();	
+	vb_init_par_env();	
 		// Multiply A and B element-wise
-		par_array C = par_map2( mul2, A, B, NULL, NULL );
+		par_array C = vb_map2( mul2, A, B, NULL, NULL );
 		// Reduce the result of the element-wise multiplication to get the final dot product
-		res = par_reduce(sum2, C, NULL, NULL);
-	destroy_par_env();
+		res = vb_reduce(sum2, C, NULL, NULL);
+	vb_destroy_par_env();
 
 	printf("%.2f ", res); 
 

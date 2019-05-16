@@ -22,7 +22,7 @@ void replicate_thrd(distribution dist, int id, par_array* out, void* f, void* p,
 	}
 }
 
-par_array par_replicate(double v, int m, int n, int (*p)(int i, void* cmp), void* cmp) {
+par_array vb_replicate(double v, int m, int n, int (*p)(int i, void* cmp), void* cmp) {
 
 	par_array res = mk_array(NULL, m, n);
 	distribution dist = distribute(NULL, 0, m, n);

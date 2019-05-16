@@ -1,111 +1,62 @@
-ifndef T
-# Default number of threads to number of processors if OS is supported, otherwise run on 1 core
-NPROCS=1
-OS=$(shell uname -s)
-
-ifeq ($(OS),Linux)	# Linux
-NPROCS=$(shell grep -c ^processor /proc/cpuinfo)
-endif
-
-ifeq ($(OS),Darwin)	# Mac OS X
-NPROCS=$(shell system_profiler | awk '/Number Of CPUs/{print $4}{next;}')
-endif
-
-T=$(NPROCS)
-endif
-
 CC=gcc
-CFLAGS=-Wall -O3 -g -DNUM_THREADS=$(T)
-LIB=-lpthread -lm
+CFLAGS=-Wall -O3 -g
+INCLUDE=-I ./lib/runtime/include
+LIB=-lpthread -lm -L./lib/runtime -lvb_par
 
-GLOB_OBJ=obj/runtime.o
-SEQ_OBJ=obj/seq_sequential.o
+all: libs tests
 
-PRIM_OBJ=obj/par_reduce.o obj/par_get.o obj/par_concat.o obj/par_map.o obj/par_count.o obj/par_select.o obj/par_send.o obj/par_scan.o obj/par_asn.o obj/par_replicate.o
+libs:
+	cd lib/runtime && make all && cd ../..
 
-PTHRD_OBJ=obj/par_tp_pthreads.o obj/par_threading.o obj/par_parallel.o $(PRIM_OBJ)
-LCKLSS_OBJ=obj/par_tp_lockless.o obj/par_threading.o obj/par_parallel.o $(PRIM_OBJ)
-
-#PAR_OBJ=$(PTHRD_OBJ)
-PAR_OBJ=$(LCKLSS_OBJ)
-
-
-# Probably a good idea to make the "runtime" into a library or something instead of directly linking the object files (mostly because it's annoying and looks ugly, and also because it makes the most sense?)
-
-tests: test_reduce test_communication test_concat test_map test_scan test_asn test_bench algorithms
+tests: test_asn test_abs test_bench test_communication test_concat test_map test_reduce test_scan algorithms
 
 algorithms: algorithm_vectorscalarmul algorithm_abs algorithm_dot
 
-
-
-# Prefix all sequential runtime object files with seq_
-obj/seq_%.o: src/runtime/sequential/%.c
-	mkdir -p obj
-	$(CC) $(CFLAGS) -c $^ -o $@ 
-
-# Prefix all parallel runtime object files with par_
-obj/par_%.o: src/runtime/parallel/%.c
-	mkdir -p obj
-	$(CC) $(CFLAGS) -c $^ -o $@ 
-obj/par_%.o: src/runtime/parallel/threadpool/%.c
-	mkdir -p obj
-	$(CC) $(CFLAGS) -c $^ -o $@ 
-obj/par_%.o: src/runtime/parallel/primitives/%.c
-	mkdir -p obj
-	$(CC) $(CFLAGS) -c $^ -o $@ 
-
-
-# Shared interface between both the parallel and sequential runtime
-obj/runtime.o: src/runtime/runtime.c
-	mkdir -p obj
-	$(CC) $(CFLAGS) -c $< -o $@ 
-
-test_a: $(GLOB_OBJ) $(SEQ_OBJ) tests/a.c
+test_map: tests/map.c 
 	mkdir -p bin
-	$(CC) $(CFLAGS) $^ -o bin/a $(LIB)
+	$(CC) $(CFLAGS) $^ -o bin/map $(LIB) $(INCLUDE)
 
-test_map: $(GLOB_OBJ) $(SEQ_OBJ) $(PAR_OBJ) tests/map.c 
+test_reduce: tests/reduce.c 
 	mkdir -p bin
-	$(CC) $(CFLAGS) $^ -o bin/map $(LIB)
-
-test_reduce: $(GLOB_OBJ) $(SEQ_OBJ) $(PAR_OBJ) tests/reduce.c 
+	$(CC) $(CFLAGS) $^ -o bin/reduce $(LIB) $(INCLUDE)
+test_scan: tests/scan.c 
 	mkdir -p bin
-	$(CC) $(CFLAGS) $^ -o bin/reduce $(LIB) 
-test_scan: $(GLOB_OBJ) $(SEQ_OBJ) $(PAR_OBJ) tests/scan.c 
+	$(CC) $(CFLAGS) $^ -o bin/scan $(LIB) $(INCLUDE)
+
+test_concat: tests/concat.c 
 	mkdir -p bin
-	$(CC) $(CFLAGS) $^ -o bin/scan $(LIB) 
+	$(CC) $(CFLAGS) $^ -o bin/concat $(LIB) $(INCLUDE)
 
-test_concat: $(GLOB_OBJ) $(SEQ_OBJ) $(PAR_OBJ) tests/concat.c 
+test_communication: tests/communication.c 
 	mkdir -p bin
-	$(CC) $(CFLAGS) $^ -o bin/concat $(LIB) 
+	$(CC) $(CFLAGS) $^ -o bin/communication $(LIB) $(INCLUDE)
 
-test_communication: $(GLOB_OBJ) $(SEQ_OBJ) $(PAR_OBJ) tests/communication.c 
+test_asn: tests/asn.c
 	mkdir -p bin
-	$(CC) $(CFLAGS) $^ -o bin/communication $(LIB) 
+	$(CC) $(CFLAGS) $^ -o bin/asn $(LIB) $(INCLUDE)
 
-test_asn: $(GLOB_OBJ) $(SEQ_OBJ) $(PAR_OBJ) tests/asn.c
+test_abs: tests/abs.c
 	mkdir -p bin
-	$(CC) $(CFLAGS) $^ -o bin/asn $(LIB) 
+	$(CC) $(CFLAGS) $^ -o bin/abs $(LIB) $(INCLUDE)
 
-
-test_bench: $(GLOB_OBJ) $(SEQ_OBJ) $(PAR_OBJ) tests/bench.c
+test_bench: tests/bench.c
 	mkdir -p bin
-	$(CC) $(CFLAGS) $^ -o bin/parallel_benchmark $(LIB) 
+	$(CC) $(CFLAGS) $^ -o bin/parallel_benchmark $(LIB) $(INCLUDE)
 
-algorithm_vectorscalarmul: $(GLOB_OBJ) $(SEQ_OBJ) $(PAR_OBJ) algorithms/vectorscalarmul.c
+algorithm_vectorscalarmul: algorithms/vectorscalarmul.c
 	mkdir -p bin
 	mkdir -p bin/algorithms
-	$(CC) $(CFLAGS) $^ -o bin/algorithms/vec_sca_mul $(LIB) 
+	$(CC) $(CFLAGS) $^ -o bin/algorithms/vec_sca_mul $(LIB) $(INCLUDE)
 
-algorithm_abs: $(GLOB_OBJ) $(SEQ_OBJ) $(PAR_OBJ) algorithms/abs.c
+algorithm_abs: algorithms/abs.c
 	mkdir -p bin
 	mkdir -p bin/algorithms
-	$(CC) $(CFLAGS) $^ -o bin/algorithms/abs $(LIB) 
+	$(CC) $(CFLAGS) $^ -o bin/algorithms/abs $(LIB) $(INCLUDE)
 
-algorithm_dot: $(GLOB_OBJ) $(SEQ_OBJ) $(PAR_OBJ) algorithms/dot.c
+algorithm_dot: algorithms/dot.c
 	mkdir -p bin
 	mkdir -p bin/algorithms
-	$(CC) $(CFLAGS) $^ -o bin/algorithms/dot $(LIB) 
+	$(CC) $(CFLAGS) $^ -o bin/algorithms/dot $(LIB) $(INCLUDE)
 clean:
 	rm -rf bin/* obj/*
 

@@ -4,9 +4,7 @@
 #include <assert.h>
 #include <time.h>
 
-#include "../src/runtime/sequential/sequential.h"
-#include "../src/runtime/parallel/parallel.h"
-#include "../src/runtime/runtime.h"
+#include <runtime.h>
 #include "benchmark.h"
 
 #define EPSILON 0.0001
@@ -30,7 +28,7 @@ int main(int argc, char** argv) {
 	double arr1[T1];
 	double arr2[T1];
 
-	init_par_env();
+	vb_init_par_env();
 
 	for(int i = 0; i < T1; i++) {
 		arr1[i] = (double)rand()/(double)(RAND_MAX / MAX);
@@ -45,12 +43,21 @@ int main(int argc, char** argv) {
 	par_t = 0.0;
 	for(int i = 0; i < N_TESTS; i++) {
 		t0 = get_time_usec();
-		R1 = par_asn(A1, A2, lt5, NULL);
+		R1 = vb_asn(A1, A2, lt5, NULL);
 		t1 = get_time_usec();
 		par_t += get_timediff(t0, t1);
 
 		t0 = get_time_usec();
-		R2 = seq_asn(A1, A2, lt5, NULL);
+		R2 = mk_array(NULL, A1.m, A1.n);
+		for(int j = A1.m; j < A1.m + length(A1); j++) {
+			if(lt5(j, A1, A2, NULL)) {
+				R2.a[G2L(R2, j)] = A2.a[G2L(A2, j)];
+			}
+			else {
+				R2.a[G2L(R2, j)] = A1.a[j];
+			}
+
+		}
 		t1 = get_time_usec();
 		seq_t += get_timediff(t0, t1);
 
@@ -64,13 +71,13 @@ int main(int argc, char** argv) {
 		}
 
 		free(R1.a);
-		//free(R2.a);
+		free(R2.a);
 	}
 	seq_t /= N_TESTS;
 	par_t /= N_TESTS;
 
 	log_benchmark(seq_t, par_t, T1, "asn");
 		
-	destroy_par_env();
+	vb_destroy_par_env();
 	return 0;
 }

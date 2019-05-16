@@ -51,7 +51,7 @@ void reduce_thrd(distribution dist, int id, par_array* out, void* f, void* p, vo
 	out->a[id] = SOME(res);
 }
 
-double par_reduce(double (*f)(double x, double y), const par_array a, int (*p)(int i, par_array x, void* cmp), void* cmp) {
+double vb_reduce(double (*f)(double x, double y), const par_array a, int (*p)(int i, par_array x, void* cmp), void* cmp) {
 	distribution dist;
 	double result = 0.0;
 
