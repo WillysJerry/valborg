@@ -32,7 +32,11 @@ PAR_OBJ=$(LCKLSS_OBJ)
 
 # Probably a good idea to make the "runtime" into a library or something instead of directly linking the object files (mostly because it's annoying and looks ugly, and also because it makes the most sense?)
 
-tests: test_reduce test_communication test_concat test_map test_scan test_asn test_qsort test_abs test_bench algorithm_add
+tests: test_reduce test_communication test_concat test_map test_scan test_asn test_bench algorithms
+
+algorithms: algorithm_vectorscalarmul algorithm_abs algorithm_dot
+
+
 
 # Prefix all sequential runtime object files with seq_
 obj/seq_%.o: src/runtime/sequential/%.c
@@ -83,22 +87,25 @@ test_asn: $(GLOB_OBJ) $(SEQ_OBJ) $(PAR_OBJ) tests/asn.c
 	mkdir -p bin
 	$(CC) $(CFLAGS) $^ -o bin/asn $(LIB) 
 
-test_qsort: $(GLOB_OBJ) $(SEQ_OBJ) $(PAR_OBJ) tests/qsort.c
-	mkdir -p bin
-	$(CC) $(CFLAGS) $^ -o bin/qsort $(LIB) 
-
-test_abs: $(GLOB_OBJ) $(SEQ_OBJ) $(PAR_OBJ) tests/abs.c
-	mkdir -p bin
-	$(CC) $(CFLAGS) $^ -o bin/abs $(LIB) 
 
 test_bench: $(GLOB_OBJ) $(SEQ_OBJ) $(PAR_OBJ) tests/bench.c
 	mkdir -p bin
 	$(CC) $(CFLAGS) $^ -o bin/parallel_benchmark $(LIB) 
 
-algorithm_add: $(GLOB_OBJ) $(SEQ_OBJ) $(PAR_OBJ) algorithms/add.c
+algorithm_vectorscalarmul: $(GLOB_OBJ) $(SEQ_OBJ) $(PAR_OBJ) algorithms/vectorscalarmul.c
 	mkdir -p bin
 	mkdir -p bin/algorithms
-	$(CC) $(CFLAGS) $^ -o bin/algorithms/add $(LIB) 
+	$(CC) $(CFLAGS) $^ -o bin/algorithms/vec_sca_mul $(LIB) 
+
+algorithm_abs: $(GLOB_OBJ) $(SEQ_OBJ) $(PAR_OBJ) algorithms/abs.c
+	mkdir -p bin
+	mkdir -p bin/algorithms
+	$(CC) $(CFLAGS) $^ -o bin/algorithms/abs $(LIB) 
+
+algorithm_dot: $(GLOB_OBJ) $(SEQ_OBJ) $(PAR_OBJ) algorithms/dot.c
+	mkdir -p bin
+	mkdir -p bin/algorithms
+	$(CC) $(CFLAGS) $^ -o bin/algorithms/dot $(LIB) 
 clean:
 	rm -rf bin/* obj/*
 
