@@ -15,6 +15,10 @@
 
 #include <runtime.h>
 
+int lt0(int i, const par_array A, void* cmp) {
+	return VAL(ELEM(A, i)) < 0.0;
+}
+
 int same(int i) {
 	return i;
 }
@@ -27,7 +31,7 @@ int main(int argc, char** argv) {
 
 	vb_init_par_env();
 		// Apply fabs (abs for floating point values) elementwise on every element in A
-		par_array B = vb_map1(fabs, A, NULL, NULL);
+		par_array B = vb_map1(fabs, A, lt0, NULL);
 		// Send the result back to A
 		vb_send(A, same, B, NULL, NULL);
 	vb_destroy_par_env();

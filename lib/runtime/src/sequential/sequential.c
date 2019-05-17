@@ -52,7 +52,7 @@ void vb_send(par_array a, int (*f)(int i), const par_array b, int (*p)(int i, co
 	for(i = a.m; i < a.n + 1; i++) {
 		dst_i = G2L(a, f(i));
 		src_i = G2L(b, i);
-		if(SATISFIES(p, i, a, b, cmp)) {
+		if(IS_SOME(b.a[src_i]) && SATISFIES(p, i, a, b, cmp)) {
 			// Need to convert from global to local index space
 			a.a[dst_i] = b.a[src_i];
 		}

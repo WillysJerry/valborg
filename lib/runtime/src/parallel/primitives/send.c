@@ -22,7 +22,7 @@ void send_thrd(distribution dist, int id, par_array* out, void* f, void* p, void
 
 	for(int i = base; i < base + size; i++) {
 		// Check predicate here
-		if(SATISFIES(pred, i, *dest_array, *A, cmp)) {
+		if(IS_SOME(A_values[ G2L(*A, i) ]) && SATISFIES(pred, i, *dest_array, *A, cmp)) {
 			dst_i = func(i);
 			dest_array->a[G2L(*dest_array, dst_i)] = A_values[ G2L(*A, i) ];	
 		}
