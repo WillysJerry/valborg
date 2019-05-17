@@ -67,7 +67,7 @@ int main(int argc, char** argv) {
 	const par_array D = mk_array(arr4, 0, T4-1);
 
 	printf("Initial test...\n");
-	R1 = vb_scan(sum2, S, NULL, NULL);
+	R1 = vb_scan(sum2, 0.0, S, NULL, NULL);
 
 	R2 = mk_array(NULL, S.m, S.n);
 	double acc = VAL(ELEM(S, S.m));
@@ -89,7 +89,7 @@ int main(int argc, char** argv) {
 	par_t = 0.0;
 	for(int i = 0; i < N_TESTS; i++) {
 		t0 = get_time_usec();
-		R1 = vb_scan(sum2, A, NULL, NULL);
+		R1 = vb_scan(sum2, 0.0, A, NULL, NULL);
 		t1 = get_time_usec();
 		par_t += get_timediff(t0, t1);
 
@@ -122,7 +122,7 @@ int main(int argc, char** argv) {
 	par_t = 0.0;
 	for(int i = 0; i < N_TESTS; i++) {
 		t0 = get_time_usec();
-		R1 = vb_scan(sum2, B, NULL, NULL);
+		R1 = vb_scan(sum2, 0.0, B, NULL, NULL);
 		t1 = get_time_usec();
 		par_t += get_timediff(t0, t1);
 
@@ -151,7 +151,7 @@ int main(int argc, char** argv) {
 	par_t = 0.0;
 	for(int i = 0; i < N_TESTS; i++) {
 		t0 = get_time_usec();
-		R1 = vb_scan(sum2, C, gt4, NULL);
+		R1 = vb_scan(sum2, 0.0, C, gt4, NULL);
 		t1 = get_time_usec();
 		par_t += get_timediff(t0, t1);
 
@@ -180,7 +180,7 @@ int main(int argc, char** argv) {
 	par_t = 0.0;
 	for(int i = 0; i < N_TESTS; i++) {
 		t0 = get_time_usec();
-		R1 = vb_scan(sum2, D, NULL, NULL);
+		R1 = vb_scan(sum2, 0.0, D, NULL, NULL);
 		t1 = get_time_usec();
 		par_t += get_timediff(t0, t1);
 

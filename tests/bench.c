@@ -91,12 +91,12 @@ int main(int argc, char** argv) {
 		free(R.a);
 
 		t0 = get_time_usec();
-		s = vb_reduce(sum2, A, NULL, NULL);
+		s = vb_reduce(sum2, 0.0, A, NULL, NULL);
 		t1 = get_time_usec();
 		reduce += get_timediff(t0, t1);
 
 		t0 = get_time_usec();
-		R = vb_scan(sum2, A, NULL, NULL);
+		R = vb_scan(sum2, 0.0, A, NULL, NULL);
 		t1 = get_time_usec();
 		scan += get_timediff(t0, t1);
 		free(R.a);

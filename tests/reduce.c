@@ -65,7 +65,7 @@ int main(int argc, char** argv) {
 	const par_array D = mk_array(arr4, 0, T4-1);
 
 	printf("Initial test...\n");
-	r = vb_reduce(sum2, S, NULL, NULL);
+	r = vb_reduce(sum2, 0.0, S, NULL, NULL);
 	
 	r2 = 0.0;
 	for(int i = 0; i < length(S); i++) {
@@ -78,7 +78,7 @@ int main(int argc, char** argv) {
 	par_t = 0.0;
 	for(int i = 0; i < N_TESTS; i++) {
 		t0 = get_time_usec();
-		r = vb_reduce(sum2, A, gt4, NULL);
+		r = vb_reduce(sum2, 0.0, A, gt4, NULL);
 		t1 = get_time_usec();
 		par_t += get_timediff(t0, t1);
 
@@ -107,7 +107,7 @@ int main(int argc, char** argv) {
 	par_t = 0.0;
 	for(int i = 0; i < N_TESTS; i++) {
 		t0 = get_time_usec();
-		r = vb_reduce(sum2, B, gt4, NULL);
+		r = vb_reduce(sum2, 0.0, B, gt4, NULL);
 		t1 = get_time_usec();
 		par_t += get_timediff(t0, t1);
 
@@ -132,7 +132,7 @@ int main(int argc, char** argv) {
 	par_t = 0.0;
 	for(int i = 0; i < N_TESTS; i++) {
 		t0 = get_time_usec();
-		r = vb_reduce(sum2, C, gt4, NULL);
+		r = vb_reduce(sum2, 0.0, C, gt4, NULL);
 		t1 = get_time_usec();
 		par_t += get_timediff(t0, t1);
 
@@ -157,7 +157,7 @@ int main(int argc, char** argv) {
 	par_t = 0.0;
 	for(int i = 0; i < N_TESTS; i++) {
 		t0 = get_time_usec();
-		r = vb_reduce(sum2, D, gt100, NULL);
+		r = vb_reduce(sum2, 0.0, D, gt100, NULL);
 		t1 = get_time_usec();
 		par_t += get_timediff(t0, t1);
 

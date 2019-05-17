@@ -41,7 +41,7 @@ int main(int argc, char** argv) {
 		// Multiply A and B element-wise
 		par_array C = vb_map2( mul2, A, B, NULL, NULL );
 		// Reduce the result of the element-wise multiplication to get the final dot product
-		res = vb_reduce(sum2, C, NULL, NULL);
+		res = vb_reduce(sum2, 0.0, C, NULL, NULL);
 	vb_destroy_par_env();
 
 	printf("%.2f ", res); 

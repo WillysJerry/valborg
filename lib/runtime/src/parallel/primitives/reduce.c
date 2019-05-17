@@ -9,7 +9,7 @@
 // Evaluates one level of the reduction tree
 void reduce_thrd(distribution dist, int id, par_array* out, void* f, void* p, void* args, void* cmp) {
 	int i;
-	double res = 0.0;
+	double res;
 	int size = dist.b_size[id];
 
 	par_array* A = dist.arrs;
@@ -21,28 +21,26 @@ void reduce_thrd(distribution dist, int id, par_array* out, void* f, void* p, vo
 		(int (*)(int, const par_array, void*)) p;
 
 
-	for(i = 0; i < size; i++) {
+	/*for(i = 0; i < size; i++) {
 		if(IS_SOME(A_values[i]) && SATISFIES(pred, i + arrbase, *A, cmp)) {
 			res = VAL(A_values[i]); 
 			break;
 		}
-	}
+	}*/
+
 
 	// Handle base cases
-	if(size == 0 || i == size) {
-		out->a[id] = NONE;
+	/*if(size == 0 || i == size) {
+		out->a[id] = SOME(initial);
 		return;
-	}
-	else if(size == 1) {
-		out->a[id] = SOME(res);
-		return;
-	}
+	}*/
 
 	// Cast void pointers to functions, this is not very readable
 	double (*func)(double x, double y) =
 		(double (*)(double x, double y)) f;
 
-	for(i += 1; i < size; i++) {
+	res = *(double*)args;
+	for(i = 0; i < size; i++) {
 		if(IS_SOME(A_values[i]) && SATISFIES(pred, i + arrbase, *A, cmp)) {
 			res = func(res, VAL(A_values[i]));	
 		}
@@ -51,15 +49,15 @@ void reduce_thrd(distribution dist, int id, par_array* out, void* f, void* p, vo
 	out->a[id] = SOME(res);
 }
 
-double vb_reduce(double (*f)(double x, double y), const par_array a, int (*p)(int i, par_array x, void* cmp), void* cmp) {
+double vb_reduce(double (*f)(double x, double y), double v, const par_array a, int (*p)(int i, par_array x, void* cmp), void* cmp) {
 	distribution dist;
-	double result = 0.0;
+	double result;
 
 	par_array res_array = mk_array(NULL, a.m, a.m + NUM_THREADS - 1);
 
 	dist = distribute(&a, 1, a.m, a.n);
 
-	execute_in_parallel(reduce_thrd, dist, &res_array, (void*)f, (void*)p, NULL, cmp);
+	execute_in_parallel(reduce_thrd, dist, &res_array, (void*)f, (void*)p, (void*)&v, cmp);
 
 	result = VAL(res_array.a[0]);
 	for(int i = 1; i < NUM_THREADS; i++) {

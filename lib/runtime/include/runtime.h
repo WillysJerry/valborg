@@ -72,8 +72,8 @@ par_array vb_map1(double (*f)(double x), const par_array a, int (*p)(int i, cons
 par_array vb_map2(double (*f)(double x, double y), const par_array a, const par_array b, int (*p)(int i, const par_array x, const par_array y, void* cmp), void* cmp);
 par_array vb_map3(double (*f)(double x, double y, double z), const par_array a, const par_array b, const par_array c, int (*p)(int i, const par_array x, const par_array y, const par_array z, void* cmp), void* cmp);
 
-double vb_reduce(double (*f)(double x, double y), const par_array a, int (*p)(int i, const par_array x, void* cmp), void* cmp);
-par_array vb_scan(double (*f)(double x, double y), const par_array a, int (*p)(int i, const par_array x, void* cmp), void* cmp);
+double vb_reduce(double (*f)(double x, double y), double v, const par_array a, int (*p)(int i, const par_array x, void* cmp), void* cmp);
+par_array vb_scan(double (*f)(double x, double y), double v, const par_array a, int (*p)(int i, const par_array x, void* cmp), void* cmp);
 
 
 // Returns the number of elements that are SOME and that satisfies predicate p
