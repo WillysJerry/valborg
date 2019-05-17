@@ -1,16 +1,13 @@
-// Vector dot product 
+// FIR-filter example 
 //
 // Input: 
-// 	A = [1.0, 2.0, 3.0, 4.0, 5.0]
-// 	B = [6.0, 7.0, 8.0, 9.0, 10.0]
+// 	X = some input time series (parallel array)
+// 	W = some array of weights 
 // Do: 	
-// 	dot(A, B)
-// Alternatively:
-// 	forall k do
-// 		C[k] = A[k] * B[k]
-// 	r = reduce(C) 
-// Expected output: 
-// 	130.0	
+//	Y = replicate(0.0, X.m, length(X) - length(W))
+// 	forall i in W do
+// 		forall j in Y in parallel do
+//	 		Y[j] = Y[j] + W[i] * X[j+1]
 
 #include <stdio.h>
 #include <stdlib.h>
