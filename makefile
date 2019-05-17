@@ -10,7 +10,7 @@ libs:
 
 tests: test_asn test_abs test_bench test_communication test_concat test_map test_reduce test_scan
 
-examples: example_vectorscalarmul example_abs example_dot
+examples: example_vectorscalarmul example_abs example_dot example_fir-filter
 
 test_map: tests/map.c 
 	mkdir -p bin
@@ -57,6 +57,11 @@ example_dot: examples/dot.c
 	mkdir -p bin
 	mkdir -p bin/examples
 	$(CC) $(CFLAGS) $^ -o bin/examples/dot $(LIB) $(INCLUDE)
+
+example_fir-filter: examples/fir-filter.c
+	mkdir -p bin
+	mkdir -p bin/examples
+	$(CC) $(CFLAGS) $^ -o bin/examples/fir-filter $(LIB) $(INCLUDE)
 clean:
 	rm -rf bin/* obj/*
 
