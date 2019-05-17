@@ -163,22 +163,11 @@ par_array vb_map3(double (*f)(double x, double y, double z), const par_array a, 
 }
 
 // Sequential reduce and scan are basically linear pairwise applications of the function f over the input array
-double vb_reduce(double (*f)(double x, double y), const par_array a, int (*p)(int i, const par_array x, void* cmp), void* cmp) {
-	int i;
-	double res = 0.0;
-	for(i = 0; i < length(a); i++) {
+double vb_reduce(double (*f)(double x, double y), double v, const par_array a, int (*p)(int i, const par_array x, void* cmp), void* cmp) {
+	double res = v;
+	for(int i = 0; i < length(a); i++) {
 		if(IS_SOME(a.a[i]) && 
 		    SATISFIES(p, L2G(a, i), a, cmp)) {
-
-			res = VAL(a.a[i]);
-			i++;
-			break;
-		}
-	}
-	for(; i < length(a); i++) {
-		if(IS_SOME(a.a[i]) && 
-		    SATISFIES(p, L2G(a, i), a, cmp)) {
-
 				res = f(res, VAL(a.a[i]));	
 		}
 	}
@@ -186,26 +175,14 @@ double vb_reduce(double (*f)(double x, double y), const par_array a, int (*p)(in
 	return res;
 }
 
-par_array vb_scan(double (*f)(double x, double y), const par_array a, int(*p)(int i, const par_array x, void* cmp), void* cmp) {
-	int i;
+par_array vb_scan(double (*f)(double x, double y), double v, const par_array a, int(*p)(int i, const par_array x, void* cmp), void* cmp) {
 	par_array arr = mk_array(NULL, a.m, a.n);
-	double acc = 0.0;
+	double acc = v;
 
 	// a[0], f(a[0], a[1]), f(a[0], f(a[1], a[2])), ...
-	
-	// Find starting index (to which we don't apply f)
-	for(i = 0; i < length(a); i++) {
-		if(IS_SOME(a.a[i]) &&
-		    SATISFIES(p, L2G(a, i), a, cmp)) {
-			acc = VAL(a.a[i]);
-			arr.a[i] = SOME(acc);
-			i++;
-			break;
-		}	
-	}
 
 	// Scan through the remaining indices of the array
-	for(; i < length(a); i++) {
+	for(int i = 0; i < length(a); i++) {
 		if(IS_SOME(a.a[i]) &&
 		    SATISFIES(p, L2G(a, i), a, cmp)) {
 			acc = f(acc, VAL(a.a[i]));
