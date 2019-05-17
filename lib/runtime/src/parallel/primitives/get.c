@@ -7,8 +7,8 @@
 void get_thrd(distribution dist, int id, par_array* out, void* f, void* p, void* args, void* cmp) {
 	int size = dist.b_size[id];
 
-	int (*func)(int i) =
-		(int (*)(int i)) f;
+	int (*func)(int i, void* arg) =
+		(int (*)(int i, void* arg)) f;
 	int (*pred)(int i, const par_array x, void* cmp) =
 		(int (*)(int, const par_array, void*)) p;
 
@@ -19,7 +19,7 @@ void get_thrd(distribution dist, int id, par_array* out, void* f, void* p, void*
 	int src_i = 0;
 
 	for(int i = base; i < base + size; i++) {
-		src_i = func( L2G(*A, i) );
+		src_i = func( L2G(*A, i), args);
 
 		// Check predicate here
 		if(SATISFIES(pred, src_i, *A, cmp))
@@ -29,13 +29,13 @@ void get_thrd(distribution dist, int id, par_array* out, void* f, void* p, void*
 	}
 }
 
-par_array vb_get(const par_array a, int (*f)(int i), int (*p)(int i, par_array x, void* cmp), void* cmp) {
+par_array vb_get(const par_array a, int (*f)(int i, void* arg), void* arg, int (*p)(int i, par_array x, void* cmp), void* cmp) {
 	distribution dist;
 	par_array res_array = mk_array(NULL, a.m, a.n);
 
 	dist = distribute(&a, 1, a.m, a.n);
 
-	execute_in_parallel(get_thrd, dist, &res_array, f, p, NULL, cmp);
+	execute_in_parallel(get_thrd, dist, &res_array, f, p, arg, cmp);
 	free_distribution(dist);
 
 	return res_array;

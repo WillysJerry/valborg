@@ -21,7 +21,7 @@ void vb_destroy_par_env() {}
 //     v  v  v  v  v  v
 // B:  3  4  0  5  0  9
 // ------------------
-par_array vb_get(const par_array a, int (*f)(int i), int (*p)(int i, const par_array x, void* cmp), void* cmp) {
+par_array vb_get(const par_array a, int (*f)(int i, void* arg), void* arg, int (*p)(int i, const par_array x, void* cmp), void* cmp) {
 	// TODO: A good idea might be to set the bounds (m..n) of the output array dynamically based on the mapping function,
 	// as this might allow for easy shifting of arrays by for instance mapping i->(i+1), which would mean that the output m
 	// should be m+1 and the out n should be n+1 (rather then keeping them the same as the in array). 
@@ -31,7 +31,7 @@ par_array vb_get(const par_array a, int (*f)(int i), int (*p)(int i, const par_a
 	int src_i;
 
 	for(int i = a.m; i < a.n + 1; i++) {
-		src_i = G2L(a, f(i));
+		src_i = G2L(a, f(i, arg));
 		if(SATISFIES(p, src_i, a, cmp)) {
 			memcpy(	b.a + G2L(b, i),
 				a.a + G2L(a, src_i),
@@ -45,12 +45,12 @@ par_array vb_get(const par_array a, int (*f)(int i), int (*p)(int i, const par_a
 // This function has side-effects. Possible race condition if f(i) == f(j) for some i and j.
 // Another thing to consider is how the bounds of the two arrays should work together, maybe we only send the elements that are intersecting? For now this is ignored.
 // The source function maps GLOBAL SPACE indices.
-void vb_send(par_array a, int (*f)(int i), const par_array b, int (*p)(int i, const par_array lhs, const par_array rhs, void* cmp), void* cmp) {
+void vb_send(par_array a, int (*f)(int i, void* arg), void* arg, const par_array b, int (*p)(int i, const par_array lhs, const par_array rhs, void* cmp), void* cmp) {
 	int i;
 	int dst_i, src_i;
 
 	for(i = a.m; i < a.n + 1; i++) {
-		dst_i = G2L(a, f(i));
+		dst_i = G2L(a, f(i, arg));
 		src_i = G2L(b, i);
 		if(IS_SOME(b.a[src_i]) && SATISFIES(p, i, a, b, cmp)) {
 			// Need to convert from global to local index space

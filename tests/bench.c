@@ -12,10 +12,10 @@
 #define N_TESTS 100
 #define MAX 10
 
-int dst(int i) {
+int dst(int i, void* args) {
 	return i;
 }
-int src(int i) {
+int src(int i, void* args) {
 	return i;
 }
 double neg(double x) {
@@ -50,12 +50,12 @@ int main(int argc, char** argv) {
 	for(int i = 0; i < N_TESTS; i++) {
 
 		t0 = get_time_usec();
-		R = vb_get(A, dst, NULL, NULL);
+		R = vb_get(A, dst, NULL, NULL, NULL);
 		t1 = get_time_usec();
 		get += get_timediff(t0, t1);
 
 		t0 = get_time_usec();
-		vb_send(R, src, A, NULL, NULL);
+		vb_send(R, src, NULL, A, NULL, NULL);
 		t1 = get_time_usec();
 		send += get_timediff(t0, t1);
 		free(R.a);

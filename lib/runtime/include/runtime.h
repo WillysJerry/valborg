@@ -57,9 +57,9 @@ bounds intersection(const par_array* arrs, int n);
 void vb_init_par_env();
 void vb_destroy_par_env();
 
-par_array vb_get(const par_array a, int (*f)(int i), int (*p)(int i, const par_array x, void* cmp), void* cmp);
+par_array vb_get(const par_array a, int (*f)(int i, void* arg), void* arg, int (*p)(int i, const par_array x, void* cmp), void* cmp);
 
-void vb_send(par_array a, int (*f)(int i), const par_array b, int (*p)(int i, const par_array lhs, const par_array rhs, void* cmp), void* cmp);
+void vb_send(par_array a, int (*f)(int i, void* arg), void* arg, const par_array b, int (*p)(int i, const par_array lhs, const par_array rhs, void* cmp), void* cmp);
 
 // Concatenates arrays a and b, resulting in a new array c where length(c) = length(a) + length(b)
 par_array vb_concat(const par_array a, const par_array b);

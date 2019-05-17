@@ -19,7 +19,7 @@ int lt0(int i, const par_array A, void* cmp) {
 	return VAL(ELEM(A, i)) < 0.0;
 }
 
-int same(int i) {
+int same(int i, void* args) {
 	return i;
 }
 
@@ -33,7 +33,7 @@ int main(int argc, char** argv) {
 		// Apply fabs (abs for floating point values) elementwise on every element in A
 		par_array B = vb_map1(fabs, A, lt0, NULL);
 		// Send the result back to A
-		vb_send(A, same, B, NULL, NULL);
+		vb_send(A, same, NULL, B, NULL, NULL);
 	vb_destroy_par_env();
 
 	for(int i = 0; i < length(A); i++) {
