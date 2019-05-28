@@ -59,59 +59,84 @@ int main(int argc, char** argv) {
 		R = vb_get(A, dst, NULL, NULL, NULL);
 		t1 = get_time_usec();
 		get += get_timediff(t0, t1);
+		free(R.a);
+	}
 
+	R = mk_array(NULL, 0, T1-1);
+	for(int i = 0; i < N_TESTS; i++) {
 		t0 = get_time_usec();
 		vb_send(R, src, NULL, A, NULL, NULL);
 		t1 = get_time_usec();
 		send += get_timediff(t0, t1);
-		free(R.a);
+	}
+	free(R.a);
 
+	for(int i = 0; i < N_TESTS; i++) {
 		t0 = get_time_usec();
 		R = vb_concat(A, A);
 		t1 = get_time_usec();
 		concat += get_timediff(t0, t1);
 		free(R.a);
+	}
 
+	for(int i = 0; i < N_TESTS; i++) {
 		t0 = get_time_usec();
 		R = vb_select(A, 0, T1-5, NULL, NULL);
 		t1 = get_time_usec();
 		select += get_timediff(t0, t1);
 		free(R.a);
+	}
 
+	
+	for(int i = 0; i < N_TESTS; i++) {
 		t0 = get_time_usec();
 		R = vb_map1(neg, A, NULL, NULL);
 		t1 = get_time_usec();
 		map1 += get_timediff(t0, t1);
 		free(R.a);
+	}
 
+	for(int i = 0; i < N_TESTS; i++) {
 		t0 = get_time_usec();
 		R = vb_map2(sum2, A, A, NULL, NULL);
 		t1 = get_time_usec();
 		map2 += get_timediff(t0, t1);
 		free(R.a);
+	}
 
+
+	for(int i = 0; i < N_TESTS; i++) {
 		t0 = get_time_usec();
 		R = vb_map3(mul3, A, A, A, NULL, NULL);
 		t1 = get_time_usec();
 		map3 += get_timediff(t0, t1);
 		free(R.a);
+	}
 
+	for(int i = 0; i < N_TESTS; i++) {
 		t0 = get_time_usec();
 		s = vb_reduce(sum2, 0.0, A, NULL, NULL);
 		t1 = get_time_usec();
 		reduce += get_timediff(t0, t1);
+	}
 
+	for(int i = 0; i < N_TESTS; i++) {
 		t0 = get_time_usec();
 		R = vb_scan(sum2, 0.0, A, NULL, NULL);
 		t1 = get_time_usec();
 		scan += get_timediff(t0, t1);
 		free(R.a);
+	}
 
+	for(int i = 0; i < N_TESTS; i++) {
 		t0 = get_time_usec();
 		cnt = vb_count(A, NULL, NULL);
 		t1 = get_time_usec();
 		count += get_timediff(t0, t1);
+	}
 
+
+	for(int i = 0; i < N_TESTS; i++) {
 		t0 = get_time_usec();
 		R = vb_asn(A, A, NULL, NULL);
 		t1 = get_time_usec();
