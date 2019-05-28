@@ -8,7 +8,7 @@
 #include "benchmark.h"
 
 #define EPSILON 0.01
-#define T1 100000
+#define T1 500000
 #define N_TESTS 100
 #define MAX 10
 
@@ -34,15 +34,21 @@ int main(int argc, char** argv) {
 
 	double get = 0.0, send = 0.0, concat = 0.0, select = 0.0, map1 = 0.0, map2 = 0.0, map3 = 0.0, reduce = 0.0, scan = 0.0, count = 0.0, asn = 0.0;
 
-	double arr0[T1];
+	double* arr0 = (double*)calloc(T1, sizeof(double)); //[T1];
+	if(arr0 == NULL) {
+		fprintf(stderr, "Failed to allocate memory for test array!\n");
+		exit(1);
+	}
+
 	double s;
 	int cnt;
 
-	for(unsigned long long i = 0; i < T1; i++) {
+	for(int i = 0; i < T1; i++) {
 		arr0[i] = (double)rand()/(double)( (RAND_MAX / MAX) ) - (double)(MAX / 2.0);
 	}
 
-	par_array A = mk_array(arr0, 0, T1-1);
+	const par_array A = mk_array(arr0, 0, T1-1);
+	free(arr0);
 	par_array R;
 
 	vb_init_par_env();
@@ -128,6 +134,8 @@ int main(int argc, char** argv) {
 	printf("get: %.1f\nsend: %.1f\nconcat: %.1f\nselect: %.1f\nmap1: %.1f\nmap2: %.1f\nmap3: %.1f\nreduce: %.1f\nscan: %.1f\ncount: %.1f\nasn: %.1f\n", get, send, concat, select, map1, map2, map3, reduce, scan, count, asn);
 
 	vb_destroy_par_env();
+
+	free(A.a);
 
 	return 0;
 }
