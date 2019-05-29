@@ -41,24 +41,24 @@ libvb_seq.a: $(GLOB_OBJ) $(SEQ_OBJ)
 # Prefix all sequential runtime object files with seq_
 obj/seq_%.o: src/sequential/%.c
 	mkdir -p obj
-	$(CC) $(CFLAGS) -c $^ -o $@ $(INCLUDE)
+	$(CC) $(CFLAGS) -c $^ -o $@ $(INCLUDE) $(LIB)
 
 # Prefix all parallel runtime object files with par_
 obj/par_%.o: src/parallel/%.c
 	mkdir -p obj
-	$(CC) $(CFLAGS) -c $^ -o $@ $(INCLUDE)
+	$(CC) $(CFLAGS) -c $^ -o $@ $(INCLUDE) $(LIB)
 obj/par_%.o: src/parallel/threadpool/%.c
 	mkdir -p obj
-	$(CC) $(CFLAGS) -c $^ -o $@ $(INCLUDE)
+	$(CC) $(CFLAGS) -c $^ -o $@ $(INCLUDE) $(LIB)
 obj/par_%.o: src/parallel/primitives/%.c
 	mkdir -p obj
-	$(CC) $(CFLAGS) -c $^ -o $@ $(INCLUDE)
+	$(CC) $(CFLAGS) -c $^ -o $@ $(INCLUDE) $(LIB)
 
 
 # Shared interface between both the parallel and sequential runtime
 obj/runtime.o: src/runtime.c
 	mkdir -p obj
-	$(CC) $(CFLAGS) -c $< -o $@ $(INCLUDE)
+	$(CC) $(CFLAGS) -c $< -o $@ $(INCLUDE) $(LIB)
 clean:
 	rm -rf *.a obj/* 
 
