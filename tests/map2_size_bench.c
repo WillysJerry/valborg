@@ -12,6 +12,17 @@
 #define N_TESTS 100
 #define MAX 10
 
+int ipow(int x, unsigned int exp) {
+	switch(exp) {
+		case 0:
+			return 1;
+		case 1:
+			return x;
+		default:
+			return x * ipow(x, exp - 1);
+	}
+}
+
 double sum2(double x, double y) {
 	return x+y;
 }
@@ -21,7 +32,7 @@ int main(int argc, char** argv) {
 	double t0, t1;
 	double tot_t, avg_t;
 
-	size_t arr_length = (size_t)pow(10.0, EXPONENT) + 1;
+	size_t arr_length = (size_t)ipow(10, EXPONENT);
 
 	double* arr0 = (double*)calloc(arr_length, sizeof(double));
 	if(arr0 == NULL) {
@@ -42,7 +53,7 @@ int main(int argc, char** argv) {
 	vb_init_par_env();
 
 	for(int i = 0; i < EXPONENT + 1; i++) {
-		A = mk_array(arr0, 0, (int)pow(10.0, i) - 1);
+		A = mk_array(arr0, 0, ipow(10, i) - 1);
 
 		tot_t = 0.0;
 		for(int j = 0; j < N_TESTS; j++) {
@@ -55,7 +66,7 @@ int main(int argc, char** argv) {
 		free(A.a);
 
 		avg_t = tot_t / N_TESTS;
-		printf("[%d]: %.1f\n", (int)pow(10.0, i), avg_t);
+		printf("[%d]: %.1f\n", ipow(10, i), avg_t);
 	}
 
 	vb_destroy_par_env();
