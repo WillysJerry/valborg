@@ -16,12 +16,14 @@ do
 	cd lib/runtime 
 	eval make clean && make libvb_par.a -e T=$i 
 	cd ../..
-	eval make clean && make test_bench test_abs	
+	eval make clean && make test_bench test_abs test_map_bench
 	echo "Sleeping for 5 seconds before running the test..."
 	sleep 5 
 	echo "OK, running test on $i core(s)"
 	eval ./bin/parallel_benchmark >> benchmark.txt 2> >(sed $'s,.*,\e[31m&\e[m,'>&2)
 	echo "Abs:" >> benchmark.txt
 	eval ./bin/abs >> benchmark.txt 2> >(sed $'s,.*,\e[31m&\e[m,'>&2)
+	echo "Size tests:" >> benchmark.txt
+	eval ./bin/size_benchmark >> benchmark.txt 2> >(sed $'s,.*,\e[31m&\e[m,'>&2)
 done
 

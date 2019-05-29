@@ -8,7 +8,7 @@ all: libs tests examples
 libs:
 	cd lib/runtime && make all && cd ../..
 
-tests: test_asn test_abs test_bench test_communication test_concat test_map test_reduce test_scan
+tests: test_asn test_abs test_bench test_communication test_concat test_map test_reduce test_scan test_map_bench
 
 examples: example_vectorscalarmul example_abs example_dot example_fir-filter
 
@@ -42,6 +42,10 @@ test_abs: tests/abs.c
 test_bench: tests/bench.c
 	mkdir -p bin
 	$(CC) $(CFLAGS) $^ -o bin/parallel_benchmark $(LIB) $(INCLUDE)
+
+test_map_bench: tests/map2_size_bench.c
+	mkdir -p bin
+	$(CC) $(CFLAGS) $^ -o bin/size_benchmark $(LIB) $(INCLUDE)
 
 example_vectorscalarmul: examples/vectorscalarmul.c
 	mkdir -p bin
